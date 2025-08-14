@@ -2,17 +2,20 @@ import cv2
 import numpy as np
 import subprocess
 
-def capture_screen():
-    result = subprocess.run(
-        ["adb", "exec-out", "screencap", "-p"],
-        stdout=subprocess.PIPE
-    )
-    img_array = np.frombuffer(result.stdout, np.uint8)
-    return cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+class Screen:
+    def __init__(self):
+        pass
 
-def find_card(screen, template_path, threshold=0.9):
-    template = cv2.imread(template_path, cv2.IMREAD_COLOR)
-    res = cv2.matchTemplate(screen, template, cv2.TM_CCOEFF_NORMED)
-    loc = np.where(res >= threshold)
-    positions = list(zip(*loc[::-1]))
-    return positions
+    def capture(self):
+        result = subprocess.run(
+            ["adb", "exec-out", "screencap", "-p"],
+	        stdout=subprocess.PIPE
+    	)
+        img_array = np.frombuffer(result.stdout, np.uint8)
+        return cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+
+    def tap(self, x, y):
+        subprocess.run(["adb", "shell", "input", "tap", str(x), str(y)])
+
+    def swipe(self, x1, y1, x2, y2, duration_ms=300):
+        subprocess.run(["adb", "shell", "input", "swipe", str(x1), str(y1), str(x2), str(y2), str(duration_ms)])
