@@ -13,7 +13,7 @@ This Python application is designed to win every game of [Solitaire](https://pla
 ## Installation
 1. Clone the repository
 ```bash
-git clone https://github.com/DeathEel/auto_solitaire.git
+git clone ssh://git@github.com/DeathEel/auto_solitaire.git
 cd auto_solitaire
 ```
 
