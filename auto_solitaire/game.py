@@ -5,6 +5,26 @@ from collections import deque
 SCREEN_HEIGHT = 2340
 SCREEN_WIDTH = 1080
 
+FOUNDATION_0_X = 84
+FOUNDATION_0_Y = 392
+FOUNDATION_1_X = 238
+FOUNDATION_1_Y = 392
+FOUNDATION_2_X = 390
+FOUNDATION_2_Y = 392
+FOUNDATION_3_X = 542
+FOUNDATION_3_Y = 392
+WASTE_X = 780
+WASTE_Y = 392
+STOCK_X = 1000
+STOCK_Y = 392
+TABLEAU_0_X = 84
+TABLEAU_1_X = 238
+TABLEAU_2_X = 390
+TABLEAU_3_X = 542
+TABLEAU_4_X = 694
+TABLEAU_5_X = 846
+TABLEAU_6_X = 1000
+
 class Card:
     def __init__(self, template_path, pos=None):
         self.rank = template_path[5]
@@ -54,6 +74,7 @@ class GameState:
     def find_cards(self, screen, cards, threshold=0.98):
         found_cards = []
         for card in cards:
+            print(f"Finding {card.rank}{card.suit}")
             template = cv2.imread(card.template_path, cv2.IMREAD_COLOR)
             res = cv2.matchTemplate(screen, template, cv2.TM_CCOEFF_NORMED)
             loc = np.where(res >= threshold)
@@ -83,3 +104,19 @@ class GameState:
                 self.waste.append(card)
             else:
                 self.stock.append(card)
+
+    def move_stock_to_waste(self, screen, unfound_cards):
+        screen.tap(STOCK_X, STOCK_Y)
+        drawn_card = self.stock.popleft()
+        if drawn_card is None:
+            screen.capture()
+            found_cards = self.find_cards(screen.waste_img, unfound_cards)
+            self.waste.append(found_cards[0])
+        else:
+            self.waste.append(drawn_card)
+
+    def move_waste_to_stock(self, screen):
+        screen.tap(STOCK_X, STOCK_Y)
+        for card in self.waste:
+            self.stock.append(card)
+        self.waste = []
