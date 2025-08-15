@@ -2,6 +2,9 @@ import cv2
 import numpy as np
 from collections import deque
 
+SCREEN_HEIGHT = 2340
+SCREEN_WIDTH = 1080
+
 class Card:
     def __init__(self, template_path, pos=None):
         self.rank = template_path[5]
@@ -56,7 +59,9 @@ class GameState:
             loc = np.where(res >= threshold)
             pos = list(zip(*loc[::-1]))
             if pos:
-                corrected_pos = (pos[0][0] + 70, pos[0][1] + 40)    # center position on card
+                x, y = pos[0]
+                crop_height, crop_width = screen.shape[:2]  # offset positions by cropped amount
+                corrected_pos = (x + 70 + (SCREEN_WIDTH - crop_width), y + 40 + (SCREEN_HEIGHT - crop_height))    # center position on card
                 card.pos = corrected_pos    # update position of card
                 found_cards.append(card)
                 print(f"Found {card.rank}{card.suit} at {card.pos}")
