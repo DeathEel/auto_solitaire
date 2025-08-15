@@ -2,54 +2,37 @@ import cv2
 from adb import Screen
 from game import GameState, Card
 
-'''
-Tap here for these
 
-Foundation =	(84,	392)
-				(238,	392)
-				(390,	392)
-				(542,	392)
-
-Waste =			(780,	392)
-
-Stock =			(1000,	392)
-
-Tableau =		(84,	y)
-				(238,	y)
-				(390,	y)
-				(542,	y)
-				(694,	y)
-				(846,	y)
-				(1000,	y)
-'''
 
 def main():
     suits = ["H", "S", "C", "D"]
     values = ["2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A"]
     template_paths = [f"data/{value}{suit}.png" for value in values for suit in suits]
     
-    screen = Screen()
-    game = GameState()
-
     # Initialise all 52 Card objects to a list
     unfound_cards = set(Card(path) for path in template_paths)
 
-    # Initial screen capture and crop
-    full_img = screen.capture()
-    tableau_img = full_img[550:, :]
-    foundation_img = full_img[:550, :610]
-    waste_img = full_img[610:910, :550]
+    # Initial screen capture
+    screen = Screen()
+
+    # Set up game state
+    game = GameState()
     
     # Find tableau cards and update game state
-    found_cards = game.find_cards(tableau_img, unfound_cards)
+    found_cards = game.find_cards(screen.tableau_img, unfound_cards)
     game.update_state(found_cards)
     print(", ".join(f"{card.rank}{card.suit}" for card in unfound_cards))
     print(", ".join(f"{card.rank}{card.suit}" for card in found_cards))
-    
+    game.print_state()
+
+    # Run through stock and update game state
+    for _ in range(24):
+        game.move_stock_to_waste(screen, unfound_cards)
+        game.print_state()
+    game.move_waste_to_stock(screen)
+    print(", ".join(f"{card.rank}{card.suit}" for card in unfound_cards))
+    print(", ".join(f"{card.rank}{card.suit}" for card in found_cards))
     game.print_state()
     
-    cv2.imshow("Screen", full_img)
-    cv2.waitKey(0)
-
 if __name__ == "__main__":
     main()
