@@ -2,6 +2,13 @@ import cv2
 import numpy as np
 from collections import deque
 
+class Card:
+    def __init__(self, template_path, pos=None):
+        self.rank = template_path[5]
+        self.suit = template_path[6]
+        self.template_path = template_path
+        self.pos = pos
+
 class GameState:
     def __init__(self):
         self.tableau = [[None] * i for i in range(7)]
@@ -9,44 +16,65 @@ class GameState:
         self.stock = deque([None] * 24)
         self.waste = []
 
-    def find_known_card(self, screen, template_path, threshold=0.98):
-        template = cv2.imread(template_path, cv2.IMREAD_COLOR)
-        res = cv2.matchTemplate(screen, template, cv2.TM_CCOEFF_NORMED)
-        loc = np.where(res >= threshold)
-        pos = list(zip(*loc[::-1]))
-        if pos:
-            corrected_pos = (pos[0][0] + 70, pos[0][1] + 40)
-            found_card = (template_path, corrected_pos)
-            return found_card
-        else:
-            return None
+    def print_state(self):
+        for i in range(7):
+            column = self.tableau[i]
+            cards = []
+            for card in column:
+                if not card:
+                    cards.append(None)
+                else:
+                    cards.append(card.rank + card.suit)
+            print(f"TABLEAU COLUMN {i}: {cards}")
 
-    def find_all_cards(self, screen, template_paths, threshold=0.98):
+        for i in range(4):
+            column = self.foundation[i]
+            cards = []
+            for card in column:
+                cards.append(card.rank + card.suit)
+            print(f"FOUNDATION COLUMN {i}: {cards}")
+
+        cards = []
+        for card in self.stock:
+            if not card:
+                cards.append(None)
+            else:
+                cards.append(card.rank + card.suit)
+        print(f"STOCK: {cards}")
+
+        cards = []
+        for card in self.waste:
+            cards.append(card.rank + card.suit)
+        print(f"WASTE: {cards}")
+
+    # Updates position of Card objects passed
+    def find_cards(self, screen, cards, threshold=0.98):
         found_cards = []
-
-        for template_path in template_paths:
-            found_card = self.find_known_card(screen, template_path, threshold)
-            if found_card:
-                print(f"Found {found_card[0]} at {found_card[1]}")
-                found_cards.append(found_card)
-
+        for card in cards:
+            template = cv2.imread(card.template_path, cv2.IMREAD_COLOR)
+            res = cv2.matchTemplate(screen, template, cv2.TM_CCOEFF_NORMED)
+            loc = np.where(res >= threshold)
+            pos = list(zip(*loc[::-1]))
+            if pos:
+                corrected_pos = (pos[0][0] + 70, pos[0][1] + 40)    # center position on card
+                card.pos = corrected_pos    # update position of card
+                found_cards.append(card)
+                print(f"Found {card.rank}{card.suit} at {card.pos}")
+        cards.difference_update(found_cards)
         return found_cards
 
-    def update_game_state(self, card_infos):
-        for card_info in card_infos:
-            print(f"Updating {card_info[0]}, {card_info[1]}")
-            card_x, card_y = card_info[1]
+    # Updates GameState members
+    def update_state(self, cards):
+        for card in cards:
+            print(f"Updating {card.rank}{card.suit} with new position {card.pos}")
+            card_x, card_y = card.pos
             col = round((card_x - 84) / 154)
 
             if card_y > 450:
-                print(f"{card_info[0]} is in tableau, column {col}")
-                self.tableau[col].append(card_info)
+                self.tableau[col].append(card)
             elif card_y < 450 and col <= 3:
-                print(f"{card_info[0]} is in foundation, column {col}")
-                self.foundation[col].append(card_info)
+                self.foundation[col].append(card)
             elif card_y < 450 and col > 3 and col <= 5:
-                print(f"{card_info[0]} is in waste, column {col}")
-                self.waste.append(card_info)
+                self.waste.append(card)
             else:
-                print(f"{card_info[0]} is in stock, column {col}")
-                self.stock.append(card_info)
+                self.stock.append(card)
