@@ -38,7 +38,7 @@ class GameState:
         print(f"WASTE: {self.waste}")
 
     # Updates position of Card objects passed
-    def find_cards(self, screen, cards, threshold=0.98):
+    def find_cards(self, screen, cards, amount_to_find, threshold=0.98):
         found_cards = []
         for card in cards:
             print(f"Finding {card}")
@@ -53,6 +53,8 @@ class GameState:
                 card.pos = corrected_pos    # update position of card
                 found_cards.append(card)
                 print(f"Found {card} at {card.pos}")
+                if len(found_cards) == amount_to_find:  # break early to avoid unnecessary loops
+                    break
         cards.difference_update(found_cards)
         return found_cards
 
@@ -77,7 +79,7 @@ class GameState:
         drawn_card = self.stock.popleft()
         if drawn_card is None:
             screen.capture()
-            found_cards = self.find_cards(screen.waste_img, unfound_cards)
+            found_cards = self.find_cards(screen.waste_img, unfound_cards, 1)
             self.waste.append(found_cards[0])
         else:
             self.waste.append(drawn_card)
