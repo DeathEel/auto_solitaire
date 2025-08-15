@@ -22,10 +22,13 @@ class Screen:
         self.foundation_img = self.full_img[:550, :610]
         self.waste_img = self.full_img[:550, 610:910]
 
-    def tap(self, x, y):
+    def tap(self, pos):
+        x, y = pos
         subprocess.run(["adb", "shell", "input", "tap", str(x), str(y)])
         time.sleep(0.5)
 
-    def swipe(self, x1, y1, x2, y2, duration_ms=300):
+    def swipe(self, src, dst, duration_ms=300):
+        x1, y1 = src
+        x2, y2 = dst
         subprocess.run(["adb", "shell", "input", "swipe", str(x1), str(y1), str(x2), str(y2), str(duration_ms)])
         time.sleep(0.5)

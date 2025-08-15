@@ -2,8 +2,6 @@ import cv2
 from adb import Screen
 from game import GameState, Card
 
-
-
 def main():
     suits = ["H", "S", "C", "D"]
     values = ["2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A"]
@@ -21,8 +19,8 @@ def main():
     # Find tableau cards and update game state
     found_cards = game.find_cards(screen.tableau_img, unfound_cards)
     game.update_state(found_cards)
-    print(", ".join(f"{card.rank}{card.suit}" for card in unfound_cards))
-    print(", ".join(f"{card.rank}{card.suit}" for card in found_cards))
+    print(unfound_cards)
+    print(found_cards)
     game.print_state()
 
     # Run through stock and update game state
@@ -30,8 +28,8 @@ def main():
         game.move_stock_to_waste(screen, unfound_cards)
         game.print_state()
     game.move_waste_to_stock(screen)
-    print(", ".join(f"{card.rank}{card.suit}" for card in unfound_cards))
-    print(", ".join(f"{card.rank}{card.suit}" for card in found_cards))
+    print(unfound_cards)
+    print(found_cards)
     game.print_state()
     
 if __name__ == "__main__":
