@@ -6,8 +6,7 @@ import time
 class Screen:
     def __init__(self):
         self.full_img = None
-        self.tableau_img = None
-        self.foundation_img = None
+        self.tableau_imgs = None
         self.waste_img = None
         self.capture()
 
@@ -18,8 +17,8 @@ class Screen:
     	)
         img_array = np.frombuffer(result.stdout, np.uint8)
         self.full_img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
-        self.tableau_img = self.full_img[550:, :]
-        self.foundation_img = self.full_img[:550, :610]
+        tableau_full_img = self.full_img[550:1600, :]
+        self.tableau_imgs = [tableau_full_img[:, i * 154 : (i + 1) * 154] for i in range(7)] # divide into seven columns
         self.waste_img = self.full_img[:550, 610:910]
 
     def tap(self, pos):
