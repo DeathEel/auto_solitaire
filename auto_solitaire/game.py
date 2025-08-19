@@ -65,22 +65,6 @@ class GameState:
         cards.difference_update(found_cards)
         return found_cards
 
-    # Updates GameState members
-    def update_state(self, cards):
-        for card in cards:
-            print(f"Updating {card} with new position {card.pos}")
-            card_x, card_y = card.pos
-            col = card.get_col()
-
-            if card_y > 450:
-                self.tableau[col].append(card)
-            elif card_y < 450 and col <= 3:
-                self.foundation[col].append(card)
-            elif card_y < 450 and col > 3 and col <= 5:
-                self.waste.append(card)
-            else:
-                self.stock.append(card)
-
     def move_tableau_to_tableau(self, screen, src_card, dst_card, unfound_cards):
         screen.swipe(src_card.pos, dst_card.pos)
 
