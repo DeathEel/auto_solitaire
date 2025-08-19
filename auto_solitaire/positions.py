@@ -9,3 +9,6 @@ class Position:
 
     def __repr__(self):
         return f"({self.x}, {self.y})"
+
+    def __call__(self):
+        return (self.x, self.y)
