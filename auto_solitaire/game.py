@@ -2,19 +2,15 @@ import cv2
 import numpy as np
 from collections import deque
 import positions
-
-SCREEN_HEIGHT = 2340
-SCREEN_WIDTH = 1080
+import constants
 
 class Card:
-    def __init__(self, template_path=None, pos=None):
-        if not template_path:
-            self.rank = ""
-            self.suit = ""
-        else:
-            self.rank = template_path[5]
-            self.suit = template_path[6]
-        self.template_path = template_path
+    def __init__(self, rank, suit, pos=None):
+        self.rank = constants.RANKS[rank]
+        self.suit = constants.SUITS[suit]
+        self.rank_num = rank
+        self.suit_num = suit
+        self.template_path = f"data/{self.rank}{self.suit}.png"
         self.pos = pos
 
     def __repr__(self):
@@ -23,10 +19,16 @@ class Card:
     def get_col(self):
         return round((self.pos.x - 84) / 154)
 
+    def is_one_rank_apart(self, other):
+        return abs(self.rank_num - other.rank_num) == 1
+
+    def color_value(self):
+        return "red" if self.suit in ["D", "H"] else "black"
+
 class GameState:
     def __init__(self):
         self.tableau = [[None] * i for i in range(7)]
-        self.foundation = {"H": [], "S": [], "C": [], "D": []}
+        self.foundation = {suit: [] for suit in constants.SUITS}
         self.stock = deque([None] * 24)
         self.waste = []
 
@@ -52,7 +54,7 @@ class GameState:
             if pos:
                 x, y = pos[0]
                 crop_height, crop_width = screen.shape[:2]  # offset positions by cropped amount
-                corrected_pos = positions.Position(x + 70 + (SCREEN_WIDTH - crop_width), y + 40 + (SCREEN_HEIGHT - crop_height))  # center position on card
+                corrected_pos = positions.Position(x + 70 + (constants.SCREEN_WIDTH - crop_width), y + 40 + (constants.SCREEN_HEIGHT - crop_height))  # center position on card
 
                 card.pos = corrected_pos    # update position of card
                 found_cards.append(card)
@@ -100,7 +102,7 @@ class GameState:
         print(f"Moved {src_card} from tableau {src_col} to tableau {dst_col}")
 
     def move_stock_to_waste(self, screen, unfound_cards):
-        screen.tap(positions.STOCK_POS)
+        screen.tap(constants.STOCK_POSITION)
         
         drawn_card = self.stock.popleft()
         if drawn_card is None:
@@ -111,7 +113,7 @@ class GameState:
         print(f"Moved {drawn_card} from stock to waste")
 
     def move_waste_to_tableau(self, screen, dst_card):
-        screen.swipe(positions.WASTE_POS, dst_card.pos)
+        screen.swipe(constants.WASTE_POSITION, dst_card.pos)
 
         src_card = self.waste.pop()
         dst_col = dst_card.get_col()
@@ -120,7 +122,7 @@ class GameState:
         print(f"Moved {src_card} from waste to tableau {dst_col}")
 
     def move_waste_to_stock(self, screen):
-        screen.tap(positions.STOCK_POS)
+        screen.tap(constants.STOCK_POSITION)
 
         for card in self.waste:
             self.stock.append(card)
@@ -129,7 +131,7 @@ class GameState:
         print(f"Moved all of waste to stock")
 
     def move_tableau_to_foundation(self, screen, src_card, unfound_cards):
-        screen.tap(src_card.pos)
+        screen.swipe(src_card.pos, FOUNDATION_POSITIONS[src_card.suit])
 
         src_col = src_card.get_col()
         self.foundation[src_card.suit].append(self.tableau[src_col].pop())
@@ -143,7 +145,7 @@ class GameState:
         print(f"Moved {src_card} from tableau {src_col} to foundation {src_card.suit}")
 
     def move_waste_to_foundation(self, screen):
-        screen.tap(positions.WASTE_POS)
+        screen.tap(constants.WASTE_POSITION)
 
         src_card = self.waste.pop()
         self.foundation[src_card.suit].append(src_card)
