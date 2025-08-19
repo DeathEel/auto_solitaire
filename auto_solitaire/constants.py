@@ -6,7 +6,7 @@ SUITS = "SDCH"
 
 from positions import Position
 
-FOUNDATION_POSITIONS = {suit: Position(x, y) for suit, (x, 392) in zip(SUITS, [84, 238, 390, 542])}
+FOUNDATION_POSITIONS = {suit: Position(x, 392) for suit, x in zip(SUITS, [84, 238, 390, 542])}
 WASTE_POSITION = Position(780, 392)
 STOCK_POSITION = Position(1000, 392)
 TABLEAU_X_VALUES = (84, 238, 390, 542, 694, 846, 1000)
