@@ -16,6 +16,11 @@ class Card:
     def __repr__(self):
         return f"{self.rank}{self.suit}"
 
+    def update_position(self, offset):
+        offset_x, offset_y = offset
+        self.pos.x += offset_x
+        self.pos.y += offset_y
+
     def get_col(self):
         return round((self.pos.x - 84) / 154)
 
@@ -43,7 +48,7 @@ class GameState:
         print(f"WASTE: {self.waste}")
 
     # Updates position of Card objects passed
-    def find_cards(self, screen, cards, amount_to_find, threshold=0.98):
+    def find_cards(self, screen, screen_offset, cards, amount_to_find, threshold=0.98):
         found_cards = []
         for card in cards:
             print(f"Finding {card}")
@@ -53,10 +58,9 @@ class GameState:
             pos = list(zip(*loc[::-1]))
             if pos:
                 x, y = pos[0]
-                crop_height, crop_width = screen.shape[:2]  # offset positions by cropped amount
-                corrected_pos = positions.Position(x + 70 + (constants.SCREEN_WIDTH - crop_width), y + 40 + (constants.SCREEN_HEIGHT - crop_height))  # center position on card
-
-                card.pos = corrected_pos    # update position of card
+                corrected_pos = positions.Position(x + 70, y + 40)  # center position on card
+                card.pos = corrected_pos    # initially update position of card
+                card.update_position(screen_offset) # account for cropped image
                 found_cards.append(card)
                 print(f"Found {card} at {card.pos}")
 
@@ -80,7 +84,7 @@ class GameState:
         # Case for reveal card
         if self.tableau[src_col] and self.tableau[src_col][-1] is None:
             screen.capture()
-            revealed_card = self.find_cards(screen.tableau_imgs[src_col], unfound_cards, 1)[0]
+            revealed_card = self.find_cards(screen.tableau_imgs[src_col], (src_col * 154, 550), unfound_cards, 1)[0]
             self.tableau[src_col][-1] = revealed_card
 
         print(f"Moved {src_card} from tableau {src_col} to tableau {dst_col}")
@@ -91,7 +95,7 @@ class GameState:
         drawn_card = self.stock.popleft()
         if drawn_card is None:
             screen.capture()
-            drawn_card = self.find_cards(screen.waste_img, unfound_cards, 1)[0]
+            drawn_card = self.find_cards(screen.waste_img, (610, 0), unfound_cards, 1)[0]
         self.waste.append(drawn_card)
 
         print(f"Moved {drawn_card} from stock to waste")
@@ -123,7 +127,7 @@ class GameState:
         # Case for reveal card
         if self.tableau[src_col] and self.tableau[src_col][-1] is None:
             screen.capture()
-            revealed_card = self.find_cards(screen.tableau_imgs[src_col], unfound_cards, 1)[0]
+            revealed_card = self.find_cards(screen.tableau_imgs[src_col], (src_col * 154, 550), unfound_cards, 1)[0]
             self.tableau[src_col][-1] = revealed_card
 
         print(f"Moved {src_card} from tableau {src_col} to foundation {src_card.suit}")
