@@ -15,7 +15,7 @@ def main():
     # Find tableau cards and update game state
     for i in range(7):
         found_card = state.find_cards(screen.tableau_imgs[i], (i * 154, 550), unfound_cards, 1)[0]
-        state.tableau[found_card.get_col()].append(found_card)
+        state.tableau[found_card.col()].append(found_card)
     print(unfound_cards)
     state.print_state()
 

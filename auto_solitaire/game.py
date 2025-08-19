@@ -21,14 +21,16 @@ class Card:
         self.position.x += offset_x
         self.position.y += offset_y
 
-    def get_col(self):
+    def col(self):
         return round((self.position.x - 84) / 154)
 
-    def is_one_rank_apart(self, other):
-        return abs(self.rank_num - other.rank_num) == 1
+    def rank_difference(self, other):
+        return self.rank_num - other.rank_num
 
-    def color_value(self):
-        return "red" if self.suit in ["D", "H"] else "black"
+    def is_same_color(self, other):
+        self_color = "red" if self.suit in ["D", "H"] else "black"
+        other_color = "red" if other.suit in ["D", "H"] else "black"
+        return self_color == other_color
 
 class GameState:
     def __init__(self):
@@ -36,6 +38,22 @@ class GameState:
         self.foundation = {suit: [] for suit in C.SUITS}
         self.stock = deque([None] * 24)
         self.waste = []
+
+    def can_build(self, src_card, dst_card):
+        # Cards are built on each other if descending rank and different colors
+        if dst_card:
+            return src_card.rank_difference(dst_card) == -1 and not src_card.is_same_color(dst_card)
+
+        # Cards can be moved to empty column if it is King
+        return src_card.rank == "K"
+
+    def can_build_foundation(self, src_card, dst_card):
+        # Cards are built on foundation if ascending rank and same suit
+        if dst_card:
+            return src_card.rank_difference(dst_card) == 1 and src_card.suit == dst_card.suit
+
+        # Cards be moved to empty foundation if it is Ace
+        return src_card.rank == "A"
 
     def print_state(self):
         for i in range(7):
@@ -72,8 +90,8 @@ class GameState:
     def move_tableau_to_tableau(self, screen, src_card, dst_card, unfound_cards):
         screen.swipe(src_card.position, dst_card.position)
 
-        src_col = src_card.get_col()
-        dst_col = dst_card.get_col()
+        src_col = src_card.col()
+        dst_col = dst_card.col()
 
         src_idx = self.tableau[src_col].index(src_card)
         cut = self.tableau[src_col][src_idx:]
@@ -104,7 +122,7 @@ class GameState:
         screen.swipe(C.WASTE_POSITION, dst_card.position)
 
         src_card = self.waste.pop()
-        dst_col = dst_card.get_col()
+        dst_col = dst_card.col()
         self.tableau[dst_col].append(src_card)
         
         print(f"Moved {src_card} from waste to tableau {dst_col}")
@@ -121,7 +139,7 @@ class GameState:
     def move_tableau_to_foundation(self, screen, src_card, unfound_cards):
         screen.swipe(src_card.position, C.FOUNDATION_POSITIONS[src_card.suit])
 
-        src_col = src_card.get_col()
+        src_col = src_card.col()
         self.foundation[src_card.suit].append(self.tableau[src_col].pop())
 
         # Case for reveal card
@@ -143,7 +161,7 @@ class GameState:
     def move_foundation_to_tableau(self, screen, src_card, dst_card):
         screen.swipe(src_card.position, dst_card.position)
 
-        dst_col = dst_card.get_col()
+        dst_col = dst_card.col()
         self.tableau[dst_col].append(self.foundation[src_card.suit].pop())
 
         print(f"Moved {src_card} from foundation {src_card.suit} to tableau {dst_col}")
