@@ -5,24 +5,24 @@ import positions
 import constants
 
 class Card:
-    def __init__(self, rank, suit, pos=None):
+    def __init__(self, rank, suit, position=None):
         self.rank = constants.RANKS[rank]
         self.suit = constants.SUITS[suit]
         self.rank_num = rank
         self.suit_num = suit
         self.template_path = f"data/{self.rank}{self.suit}.png"
-        self.pos = pos
+        self.position = position
 
     def __repr__(self):
         return f"{self.rank}{self.suit}"
 
     def update_position(self, offset):
         offset_x, offset_y = offset
-        self.pos.x += offset_x
-        self.pos.y += offset_y
+        self.position.x += offset_x
+        self.position.y += offset_y
 
     def get_col(self):
-        return round((self.pos.x - 84) / 154)
+        return round((self.position.x - 84) / 154)
 
     def is_one_rank_apart(self, other):
         return abs(self.rank_num - other.rank_num) == 1
@@ -55,14 +55,14 @@ class GameState:
             template = cv2.imread(card.template_path, cv2.IMREAD_COLOR)
             res = cv2.matchTemplate(screen, template, cv2.TM_CCOEFF_NORMED)
             loc = np.where(res >= threshold)
-            pos = list(zip(*loc[::-1]))
-            if pos:
-                x, y = pos[0]
-                corrected_pos = positions.Position(x + 70, y + 40)  # center position on card
-                card.pos = corrected_pos    # initially update position of card
+            position = list(zip(*loc[::-1]))
+            if position:
+                x, y = position[0]
+                corrected_position = positions.Position(x + 70, y + 40)  # center position on card
+                card.position = corrected_position    # initially update position of card
                 card.update_position(screen_offset) # account for cropped image
                 found_cards.append(card)
-                print(f"Found {card} at {card.pos}")
+                print(f"Found {card} at {card.position}")
 
                 if len(found_cards) == amount_to_find:  # break early to avoid unnecessary loops
                     break
@@ -70,7 +70,7 @@ class GameState:
         return found_cards
 
     def move_tableau_to_tableau(self, screen, src_card, dst_card, unfound_cards):
-        screen.swipe(src_card.pos, dst_card.pos)
+        screen.swipe(src_card.position, dst_card.position)
 
         src_col = src_card.get_col()
         dst_col = dst_card.get_col()
@@ -101,7 +101,7 @@ class GameState:
         print(f"Moved {drawn_card} from stock to waste")
 
     def move_waste_to_tableau(self, screen, dst_card):
-        screen.swipe(constants.WASTE_POSITION, dst_card.pos)
+        screen.swipe(constants.WASTE_POSITION, dst_card.position)
 
         src_card = self.waste.pop()
         dst_col = dst_card.get_col()
@@ -119,7 +119,7 @@ class GameState:
         print(f"Moved all of waste to stock")
 
     def move_tableau_to_foundation(self, screen, src_card, unfound_cards):
-        screen.swipe(src_card.pos, FOUNDATION_POSITIONS[src_card.suit])
+        screen.swipe(src_card.position, FOUNDATION_POSITIONS[src_card.suit])
 
         src_col = src_card.get_col()
         self.foundation[src_card.suit].append(self.tableau[src_col].pop())
@@ -141,7 +141,7 @@ class GameState:
         print(f"Moved {src_card} from waste to foundation {src_card.suit}")
 
     def move_foundation_to_tableau(self, screen, src_card, dst_card):
-        screen.swipe(src_card.pos, dst_card.pos)
+        screen.swipe(src_card.position, dst_card.position)
 
         dst_col = dst_card.get_col()
         self.tableau[dst_col].append(self.foundation[src_card.suit].pop())

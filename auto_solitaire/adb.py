@@ -21,8 +21,8 @@ class Screen:
         self.tableau_imgs = [tableau_full_img[:, i * 154 : (i + 1) * 154] for i in range(7)] # divide into seven columns
         self.waste_img = self.full_img[:550, 610:910]
 
-    def tap(self, pos):
-        x, y = pos
+    def tap(self, position):
+        x, y = position
         subprocess.run(["adb", "shell", "input", "tap", str(x), str(y)])
         time.sleep(0.5)
 
