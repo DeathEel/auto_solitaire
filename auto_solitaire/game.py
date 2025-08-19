@@ -119,7 +119,7 @@ class GameState:
         print(f"Moved all of waste to stock")
 
     def move_tableau_to_foundation(self, screen, src_card, unfound_cards):
-        screen.swipe(src_card.position, FOUNDATION_POSITIONS[src_card.suit])
+        screen.swipe(src_card.position, constants.FOUNDATION_POSITIONS[src_card.suit])
 
         src_col = src_card.get_col()
         self.foundation[src_card.suit].append(self.tableau[src_col].pop())
@@ -133,9 +133,9 @@ class GameState:
         print(f"Moved {src_card} from tableau {src_col} to foundation {src_card.suit}")
 
     def move_waste_to_foundation(self, screen):
-        screen.tap(constants.WASTE_POSITION)
-
         src_card = self.waste.pop()
+        screen.swipe(constants.WASTE_POSITION, constants.FOUNDATION_POSITIONS[src_card.suit])
+
         self.foundation[src_card.suit].append(src_card)
 
         print(f"Moved {src_card} from waste to foundation {src_card.suit}")
