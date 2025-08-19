@@ -1,16 +1,16 @@
 import cv2
-import adb
-import game
+from adb import Screen
+from game import Card, GameState
 
 def main():
     # Initialise all 52 Card objects to a set
-    unfound_cards = set(game.Card(rank, suit) for rank in range(13) for suit in range(4))
+    unfound_cards = set(Card(rank, suit) for rank in range(13) for suit in range(4))
 
     # Initial screen capture
-    screen = adb.Screen()
+    screen = Screen()
 
     # Set up game state
-    state = game.GameState()
+    state = GameState()
 
     # Find tableau cards and update game state
     for i in range(7):
