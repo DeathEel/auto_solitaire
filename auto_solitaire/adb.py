@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import subprocess
 import time
+from positions import Position
 
 class Screen:
     def __init__(self):
@@ -10,7 +11,7 @@ class Screen:
         self.waste_img = None
         self.capture()
 
-    def capture(self):
+    def capture(self) -> None:
         result = subprocess.run(
             ["adb", "exec-out", "screencap", "-p"],
 	        stdout=subprocess.PIPE
@@ -21,12 +22,12 @@ class Screen:
         self.tableau_imgs = [tableau_full_img[:, i * 154 : (i + 1) * 154] for i in range(7)] # divide into seven columns
         self.waste_img = self.full_img[:550, 610:910]
 
-    def tap(self, position):
+    def tap(self, position: Position) -> None:
         x, y = position
         subprocess.run(["adb", "shell", "input", "tap", str(x), str(y)])
         time.sleep(0.5)
 
-    def swipe(self, src, dst, duration_ms=300):
+    def swipe(self, src: Position, dst: Position, duration_ms=300) -> None:
         x1, y1 = src
         x2, y2 = dst
         subprocess.run(["adb", "shell", "input", "swipe", str(x1), str(y1), str(x2), str(y2), str(duration_ms)])

@@ -1,7 +1,9 @@
 import constants as C
+from game import Card, GameState
+from positions import Position
 
 class Move:
-    def __init__(self, src_position, dst_position):
+    def __init__(self, src_position: Position, dst_position: Position):
         self.src_position = src_position
         self.dst_position = dst_position
 
@@ -9,7 +11,7 @@ class MovesList:
     def __init__(self):
         self.reset()
 
-    def reset(self):
+    def reset(self) -> None:
         self.tableau_to_tableau = []
         self.stock_to_waste = []
         self.waste_to_tableau = []
@@ -18,13 +20,13 @@ class MovesList:
         self.waste_to_foundation = []
         self.foundation_to_tableau = []
 
-    def _top_card(self, pile):
+    def _top_card(self, pile: list[Card]) -> Card | None:
         return pile[-1] if pile else None
 
-    def _dst_position(self, dst_card, fallback_position):
+    def _dst_position(self, dst_card: Card | None, fallback_position: Position) -> Position:
         return dst_card.position if dst_card else fallback_position
 
-    def generate(self, state):
+    def generate(self, state: GameState) -> None:
         self.reset()
 
         # Tableau to Tableau
@@ -83,5 +85,5 @@ class MovesList:
             for dst_idx, dst_col in enumerate(state.tableau):
                 dst_card = self._top_card(dst_col)
                 if state.can_build(src_card, dst_card):
-                    dst_position = self._dst_position(dst_card, TABLEAU_POSITIONS[dst_idx])
+                    dst_position = self._dst_position(dst_card, C.TABLEAU_POSITIONS[dst_idx])
                     self.foundation_to_tableau.append(Move(src_card.position, dst_position))

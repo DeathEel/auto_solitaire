@@ -1,5 +1,5 @@
 class Position:
-    def __init__(self, x, y):
+    def __init__(self, x: int, y: int):
         self.x = x
         self.y = y
 
@@ -7,8 +7,8 @@ class Position:
         yield self.x
         yield self.y
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"({self.x}, {self.y})"
 
-    def __call__(self):
+    def __call__(self) -> tuple[int, int]:
         return (self.x, self.y)
