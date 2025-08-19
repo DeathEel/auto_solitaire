@@ -36,7 +36,7 @@ class GameState:
         for i in range(7):
             col = self.tableau[i]
             print(f"TABLEAU COLUMN {i}: {col}")
-        for i in range(4):
+        for i in constants.SUITS:
             col = self.foundation[i]
             print(f"FOUNDATION COLUMN {i}: {col}")
         print(f"STOCK: {self.stock}")
