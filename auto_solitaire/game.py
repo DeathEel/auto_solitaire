@@ -116,6 +116,29 @@ class GameState:
             cards.difference_update(found_cards)
         return found_cards
 
+    def update_positions_tableau(self, src_card, dst_col):
+        facedown_count = 0
+        faceup_count = 0
+
+        # Count facedown and faceup cards until src_card
+        for card in self.tableau[dst_col]:
+            if card == src_card:
+                break
+            if card is None:
+                facedown_count += 1
+            else:
+                faceup_count += 1
+
+        # Update src_card position separately
+        src_card.position = C.TABLEAU_POSITIONS
+        src_card.position.y += 30 * facedown_count + 80 * faceup_count
+
+        # Cut the pile after the src_card (don't include it)
+        cut = self.tableau[dst_col][facedown_count + faceup_count + 1:]
+        for idx, card in enumerate(cut):
+            card.position = src_card.position
+            card.position.y += 80 * idx
+
     def move_tableau_to_tableau(self, screen, src_card, dst_position, unfound_cards=[]):
         screen.swipe(src_card.position, dst_position)
 
@@ -128,9 +151,8 @@ class GameState:
         del self.tableau[src_col][src_idx:]
         self.tableau[dst_col].extend(cut)
 
-        # Update position of card
-        screen.capture()
-        self.find_cards(screen.tableau_imgs[dst_col], (dst_col * 154, 550), 1, [src_card])
+        # Update positions of all cards in column
+        self.update_position_tableau(src_card, dst_col)
 
         # Case for reveal card
         if self.tableau[src_col] and self.tableau[src_col][-1] is None:
@@ -158,8 +180,7 @@ class GameState:
         self.tableau[dst_col].append(src_card)
 
         # Update position of card
-        screen.capture()
-        self.find_cards(screen.tableau_imgs[dst_col], (dst_col * 154, 550), 1, [src_card])
+        self.update_position_tableau(src_card, dst_col)
 
         print(f"Moved {src_card} from waste to tableau {dst_col}")
 
@@ -201,8 +222,7 @@ class GameState:
         self.tableau[dst_col].append(self.foundation[src_card.suit].pop())
 
         # Update position of card
-        screen.capture()
-        self.find_cards(screen.tableau_imgs[dst_col], (dst_col * 154, 550), 1, [src_card])
+        self.update_position_tableau(src_card, dst_col)
 
         print(f"Moved {src_card} from foundation {src_card.suit} to tableau {dst_col}")
 
