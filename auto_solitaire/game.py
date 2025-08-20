@@ -208,8 +208,9 @@ class GameState:
         self.reset_stock(screen)
 
     def reset_stock(self, screen):
-        while self.waste:
-            self.move_waste_to_stock(screen)
+        while self.stock:
+            self.move_stock_to_waste(screen)
+        self.move_waste_to_stock(screen)
 
     def move_autocomplete(self, screen):
         screen.tap(C.AUTOCOMPLETE_POSITION)
