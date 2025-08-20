@@ -9,6 +9,6 @@ from positions import Position
 FOUNDATION_POSITIONS = {suit: Position(x, 392) for suit, x in zip(SUITS, [84, 238, 390, 542])}
 WASTE_POSITION = Position(780, 392)
 STOCK_POSITION = Position(1000, 392)
-TABLEAU_POSITIONS = (Position(x, 650) for x in (84, 238, 390, 542, 694, 846, 1000))
+TABLEAU_POSITIONS = tuple(Position(x, 650) for x in (84, 238, 390, 542, 694, 846, 1000))
 AUTOCOMPLETE_POSITION = Position(540, 1800)
 UNDO_POSITION = Position(135, 2300)
