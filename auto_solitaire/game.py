@@ -110,7 +110,10 @@ class GameState:
 
                 if len(found_cards) == amount_to_find:  # break early to avoid unnecessary loops
                     break
-        cards.difference_update(found_cards)
+
+        # Remove found_cards from unfound_cards, if cards is unfound_cards
+        if isinstance(cards, set):
+            cards.difference_update(found_cards)
         return found_cards
 
     def move_tableau_to_tableau(self, screen, src_card, dst_position, unfound_cards=[]):
@@ -126,11 +129,11 @@ class GameState:
         self.tableau[dst_col].extend(cut)
 
         # Update position of card
+        screen.capture()
         self.find_cards(screen.tableau_imgs[dst_col], (dst_col * 154, 550), 1, [src_card])
 
         # Case for reveal card
         if self.tableau[src_col] and self.tableau[src_col][-1] is None:
-            screen.capture()
             revealed_card = self.find_cards(screen.tableau_imgs[src_col], (src_col * 154, 550), 1, unfound_cards)[0]
             self.tableau[src_col][-1] = revealed_card
 
@@ -155,6 +158,7 @@ class GameState:
         self.tableau[dst_col].append(src_card)
 
         # Update position of card
+        screen.capture()
         self.find_cards(screen.tableau_imgs[dst_col], (dst_col * 154, 550), 1, [src_card])
 
         print(f"Moved {src_card} from waste to tableau {dst_col}")
@@ -197,6 +201,7 @@ class GameState:
         self.tableau[dst_col].append(self.foundation[src_card.suit].pop())
 
         # Update position of card
+        screen.capture()
         self.find_cards(screen.tableau_imgs[dst_col], (dst_col * 154, 550), 1, [src_card])
 
         print(f"Moved {src_card} from foundation {src_card.suit} to tableau {dst_col}")
