@@ -12,3 +12,6 @@ class Position:
 
     def __call__(self) -> tuple[int, int]:
         return (self.x, self.y)
+
+    def col(self) -> int:
+        return round((self.x - 84) / 154)

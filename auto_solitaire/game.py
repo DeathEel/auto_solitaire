@@ -22,9 +22,6 @@ class Card:
         self.position.x += offset_x
         self.position.y += offset_y
 
-    def col(self) -> int:
-        return round((self.position.x - 84) / 154)
-
     def rank_difference(self, other: Card) -> int:
         return self.rank_num - other.rank_num
 
@@ -32,6 +29,12 @@ class Card:
         self_color = "red" if self.suit in ["D", "H"] else "black"
         other_color = "red" if other.suit in ["D", "H"] else "black"
         return self_color == other_color
+
+    def is_bottom_card(self, state: GameState) -> bool:
+        for col in state.tableau:
+            if col and col[0] == self:
+                return True
+        return False
 
 class GameState:
     def __init__(self):
@@ -55,6 +58,23 @@ class GameState:
 
         # Cards be moved to empty foundation if it is Ace
         return src_card.rank == "A"
+
+    def has_card(self, rank: str) -> bool:
+        for col in self.tableau:
+            for card in col:
+                if card.rank == rank:
+                    return True
+        for card in self.stock:
+            if card.rank == rank:
+                return True
+        return False
+
+    def has_card_in_tableau(self, rank: str) -> bool:
+        for col in self.tableau:
+            for card in col:
+                if card.rank == rank:
+                    return True
+        return False
 
     def print_state(self) -> None:
         for i in range(7):
@@ -88,11 +108,11 @@ class GameState:
         cards.difference_update(found_cards)
         return found_cards
 
-    def move_tableau_to_tableau(self, screen: Screen, src_card: Card, dst_card: Card, unfound_cards=[]: set[Card]) -> None:
-        screen.swipe(src_card.position, dst_card.position)
+    def move_tableau_to_tableau(self, screen: Screen, src_card: Card, dst_position: Position, unfound_cards=[]: set[Card]) -> None:
+        screen.swipe(src_card.position, dst_position)
 
-        src_col = src_card.col()
-        dst_col = dst_card.col()
+        src_col = src_card.position.col()
+        dst_col = dst_position.col()
 
         src_idx = self.tableau[src_col].index(src_card)
         cut = self.tableau[src_col][src_idx:]
@@ -119,11 +139,11 @@ class GameState:
 
         print(f"Moved {drawn_card} from stock to waste")
 
-    def move_waste_to_tableau(self, screen: Screen, dst_card: Card) -> None:
-        screen.swipe(C.WASTE_POSITION, dst_card.position)
+    def move_waste_to_tableau(self, screen: Screen, dst_position: Position) -> None:
+        screen.swipe(C.WASTE_POSITION, dst_position)
 
         src_card = self.waste.pop()
-        dst_col = dst_card.col()
+        dst_col = dst_position.col()
         self.tableau[dst_col].append(src_card)
         
         print(f"Moved {src_card} from waste to tableau {dst_col}")
@@ -159,13 +179,24 @@ class GameState:
 
         print(f"Moved {src_card} from waste to foundation {src_card.suit}")
 
-    def move_foundation_to_tableau(self, screen: Screen, src_card: Card, dst_card: Card) -> None:
-        screen.swipe(src_card.position, dst_card.position)
+    def move_foundation_to_tableau(self, screen: Screen, src_card: Card, dst_position: Position) -> None:
+        screen.swipe(src_card.position, dst_position)
 
-        dst_col = dst_card.col()
+        dst_col = dst_position.col()
         self.tableau[dst_col].append(self.foundation[src_card.suit].pop())
 
         print(f"Moved {src_card} from foundation {src_card.suit} to tableau {dst_col}")
+
+    def move_stock_to_foundation(self, screen: Screen, rank: str) -> None:
+        self.move_stock_to_waste(screen)
+        while self.waste[-1].rank != rank:
+            self.move_stock_to_waste(screen)
+        self.move_waste_to_foundation(screen)
+        self.reset_stock(screen)
+
+    def reset_stock(self, screen: Screen) -> None:
+        while self.waste:
+            self.move_waste_to_stock(screen)
 
     def move_autocomplete(self, screen: Screen) -> None:
         screen.tap(C.AUTOCOMPLETE_POSITION)
