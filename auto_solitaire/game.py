@@ -36,6 +36,12 @@ class Card:
                 return True
         return False
 
+    def card_behind(self, state):
+        if self.is_bottom_card(state):
+            return None
+        col = self.position.col()
+        return state.tableau[col][state.tableau[col].index(self) - 1]
+
 class GameState:
     def __init__(self):
         self.tableau = [[None] * i for i in range(7)]
@@ -192,6 +198,13 @@ class GameState:
         while self.waste[-1] != src_card:
             self.move_stock_to_waste(screen)
         self.move_waste_to_foundation(screen)
+        self.reset_stock(screen)
+
+    def move_stock_to_tableau(self, screen, src_card, dst_position):
+        self.move_stock_to_waste(screen)
+        while self.waste[-1] != src_card:
+            self.move_stock_to_waste(screen)
+        self.move_waste_to_tableau(screen, dst_position)
         self.reset_stock(screen)
 
     def reset_stock(self, screen):
