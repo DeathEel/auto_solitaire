@@ -95,7 +95,7 @@ class GameState:
     def find_cards(self, screen, screen_offset, amount_to_find, cards=[], threshold=0.98):
         found_cards = []
         for card in cards:
-            print(f"Finding {card}")
+            #print(f"Finding {card}")
             template = cv2.imread(card.template_path, cv2.IMREAD_COLOR)
             res = cv2.matchTemplate(screen, template, cv2.TM_CCOEFF_NORMED)
             loc = np.where(res >= threshold)
@@ -106,7 +106,7 @@ class GameState:
                 card.position = corrected_position    # initially update position of card
                 card.update_position(screen_offset) # account for cropped image
                 found_cards.append(card)
-                print(f"Found {card} at {card.position}")
+                #print(f"Found {card} at {card.position}")
 
                 if len(found_cards) == amount_to_find:  # break early to avoid unnecessary loops
                     break
@@ -130,16 +130,19 @@ class GameState:
                 faceup_count += 1
 
         # Update src_card position separately
-        src_card.position = C.TABLEAU_POSITIONS[dst_col]
-        src_card.position.y += 30 * facedown_count + 80 * faceup_count
-        print(f"New {src_card} position is {src_card.position}")
+        #print(f"Facedown count is {facedown_count}. Faceup count is {faceup_count}")
+        x, y = C.TABLEAU_POSITIONS[dst_col]
+        src_card.position = Position(x, y)
+        src_card.position.y += 30 * facedown_count + 74 * faceup_count
+        #print(f"New {src_card} position is {src_card.position}")
 
         # Cut the pile after the src_card (don't include it)
         cut = self.tableau[dst_col][facedown_count + faceup_count + 1:]
         for idx, card in enumerate(cut):
-            card.position = src_card.position
-            card.position.y += 80 * idx
-            print(f"New {card} position is {card.position}")
+            x, y = src_card.position
+            card.position = Position(x, y)
+            card.position.y += 74 * (idx + 1)
+            #print(f"New {card} position is {card.position}")
 
     def move_tableau_to_tableau(self, screen, src_card, dst_position, unfound_cards=[]):
         screen.swipe(src_card.position, dst_position)
@@ -162,7 +165,7 @@ class GameState:
             revealed_card = self.find_cards(screen.tableau_imgs[src_col], (src_col * 154, 550), 1, unfound_cards)[0]
             self.tableau[src_col][-1] = revealed_card
 
-        print(f"Moved {src_card} from tableau {src_col} to tableau {dst_col}")
+        #print(f"Moved {src_card} from tableau {src_col} to tableau {dst_col}")
 
     def move_stock_to_waste(self, screen, unfound_cards=[]):
         screen.tap(C.STOCK_POSITION)
@@ -173,7 +176,7 @@ class GameState:
             drawn_card = self.find_cards(screen.waste_img, (610, 0), 1, unfound_cards)[0]
         self.waste.append(drawn_card)
 
-        print(f"Moved {drawn_card} from stock to waste")
+        #print(f"Moved {drawn_card} from stock to waste")
 
     def move_waste_to_tableau(self, screen, dst_position):
         screen.swipe(C.WASTE_POSITION, dst_position)
@@ -185,7 +188,7 @@ class GameState:
         # Update position of card
         self.update_positions_tableau(src_card, dst_col)
 
-        print(f"Moved {src_card} from waste to tableau {dst_col}")
+        #print(f"Moved {src_card} from waste to tableau {dst_col}")
 
     def move_waste_to_stock(self, screen):
         screen.tap(C.STOCK_POSITION)
@@ -194,7 +197,7 @@ class GameState:
             self.stock.append(card)
         self.waste = []
 
-        print(f"Moved all of waste to stock")
+        #print(f"Moved all of waste to stock")
 
     def move_tableau_to_foundation(self, screen, src_card, unfound_cards=[]):
         screen.swipe(src_card.position, C.FOUNDATION_POSITIONS[src_card.suit])
@@ -208,7 +211,7 @@ class GameState:
             revealed_card = self.find_cards(screen.tableau_imgs[src_col], (src_col * 154, 550), 1, unfound_cards)[0]
             self.tableau[src_col][-1] = revealed_card
 
-        print(f"Moved {src_card} from tableau {src_col} to foundation {src_card.suit}")
+        #print(f"Moved {src_card} from tableau {src_col} to foundation {src_card.suit}")
 
     def move_waste_to_foundation(self, screen):
         src_card = self.waste.pop()
@@ -216,7 +219,7 @@ class GameState:
 
         self.foundation[src_card.suit].append(src_card)
 
-        print(f"Moved {src_card} from waste to foundation {src_card.suit}")
+        #print(f"Moved {src_card} from waste to foundation {src_card.suit}")
 
     def move_foundation_to_tableau(self, screen, src_card, dst_position):
         screen.swipe(src_card.position, dst_position)
@@ -227,7 +230,7 @@ class GameState:
         # Update position of card
         self.update_positions_tableau(src_card, dst_col)
 
-        print(f"Moved {src_card} from foundation {src_card.suit} to tableau {dst_col}")
+        #print(f"Moved {src_card} from foundation {src_card.suit} to tableau {dst_col}")
 
     def move_stock_to_foundation(self, screen, src_card):
         self.move_stock_to_waste(screen)
@@ -251,9 +254,9 @@ class GameState:
     def move_autocomplete(self, screen):
         screen.tap(C.AUTOCOMPLETE_POSITION)
 
-        print(f"Autocompleted")
+        #print(f"Autocompleted")
 
     def move_undo(self, screen):
         screen.tap(C.UNDO_POSITION)
 
-        print(f"Undone")
+        #print(f"Undone")
