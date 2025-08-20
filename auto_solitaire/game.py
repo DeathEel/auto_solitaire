@@ -171,7 +171,7 @@ class GameState:
     def move_tableau_to_foundation(self, screen, src_card, unfound_cards=[]):
         screen.swipe(src_card.position, C.FOUNDATION_POSITIONS[src_card.suit])
 
-        src_col = src_card.col()
+        src_col = src_card.position.col()
         self.foundation[src_card.suit].append(self.tableau[src_col].pop())
 
         # Case for reveal card
