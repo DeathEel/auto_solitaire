@@ -77,7 +77,7 @@ class GameState:
     def find_card_in_tableau(self, rank):
         for col in self.tableau:
             for card in col:
-                if card.rank == rank:
+                if card and card.rank == rank:
                     return card
         return None
 
@@ -132,12 +132,14 @@ class GameState:
         # Update src_card position separately
         src_card.position = C.TABLEAU_POSITIONS[dst_col]
         src_card.position.y += 30 * facedown_count + 80 * faceup_count
+        print(f"New {src_card} position is {src_card.position}")
 
         # Cut the pile after the src_card (don't include it)
         cut = self.tableau[dst_col][facedown_count + faceup_count + 1:]
         for idx, card in enumerate(cut):
             card.position = src_card.position
             card.position.y += 80 * idx
+            print(f"New {card} position is {card.position}")
 
     def move_tableau_to_tableau(self, screen, src_card, dst_position, unfound_cards=[]):
         screen.swipe(src_card.position, dst_position)
