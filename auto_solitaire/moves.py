@@ -49,9 +49,9 @@ class MovesList:
 
         # Stock to Foundation
         if state.stock:
-            dst_stack = state.foundation[src_card.suit]
-            dst_card = self._top_card(dst_stack)
             for src_card in state.stock:
+                dst_stack = state.foundation[src_card.suit]
+                dst_card = self._top_card(dst_stack)
                 if state.can_build_foundation(src_card, dst_card):
                     dst_position = self._dst_position(dst_card, C.FOUNDATION_POSITIONS[src_card.suit])
                     self.stock_to_foundation.append(Move(src_card, dst_position))
@@ -81,16 +81,16 @@ class MovesList:
     def print_moves(self):
         print("Tableau to Tableau:")
         for move in self.tableau_to_tableau:
-            print(f"\t{move}")
+            print(f"\t{move.src_card} to {move.dst_position}")
         print("Stock to Tableau:")
         for move in self.stock_to_tableau:
-            print(f"\t{move}")
+            print(f"\t{move.src_card} to {move.dst_position}")
         print("Stock to Foundation:")
         for move in self.stock_to_foundation:
-            print(f"\t{move}")
+            print(f"\t{move.src_card} to {move.dst_position}")
         print("Tableau to Foundation:")
         for move in self.tableau_to_foundation:
-            print(f"\t{move}")
+            print(f"\t{move.src_card} to {move.dst_position}")
         print("Foundation to Tableau:")
         for move in self.foundation_to_tableau:
-            print(f"\t{move}")
+            print(f"\t{move.src_card} to {move.dst_position}")
