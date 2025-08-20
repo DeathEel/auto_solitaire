@@ -64,13 +64,13 @@ class GameState:
         # Cards be moved to empty foundation if it is Ace
         return src_card.rank == "A"
 
-    def has_card(self, rank):
+    def has_playable_king(self):
         for col in self.tableau:
             for card in col:
-                if card.rank == rank:
+                if card.rank == "K" and not card.is_bottom_card(self):
                     return True
         for card in self.stock:
-            if card.rank == rank:
+            if card.rank == "K":
                 return True
         return False
 
@@ -126,7 +126,7 @@ class GameState:
         self.tableau[dst_col].extend(cut)
 
         # Update position of card
-        self.find_cards(screen.tableau_imgs[dst_col], (dst_col * 154, 550), 1, src_card)
+        self.find_cards(screen.tableau_imgs[dst_col], (dst_col * 154, 550), 1, [src_card])
 
         # Case for reveal card
         if self.tableau[src_col] and self.tableau[src_col][-1] is None:
@@ -155,7 +155,7 @@ class GameState:
         self.tableau[dst_col].append(src_card)
 
         # Update position of card
-        self.find_cards(screen.tableau_imgs[dst_col], (dst_col * 154, 550), 1, src_card)
+        self.find_cards(screen.tableau_imgs[dst_col], (dst_col * 154, 550), 1, [src_card])
 
         print(f"Moved {src_card} from waste to tableau {dst_col}")
 
@@ -197,7 +197,7 @@ class GameState:
         self.tableau[dst_col].append(self.foundation[src_card.suit].pop())
 
         # Update position of card
-        self.find_cards(screen.tableau_imgs[dst_col], (dst_col * 154, 550), 1, src_card)
+        self.find_cards(screen.tableau_imgs[dst_col], (dst_col * 154, 550), 1, [src_card])
 
         print(f"Moved {src_card} from foundation {src_card.suit} to tableau {dst_col}")
 
