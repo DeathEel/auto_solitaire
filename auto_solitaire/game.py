@@ -130,7 +130,7 @@ class GameState:
                 faceup_count += 1
 
         # Update src_card position separately
-        src_card.position = C.TABLEAU_POSITIONS
+        src_card.position = C.TABLEAU_POSITIONS[dst_col]
         src_card.position.y += 30 * facedown_count + 80 * faceup_count
 
         # Cut the pile after the src_card (don't include it)
