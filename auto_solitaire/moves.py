@@ -79,3 +79,20 @@ class MovesList:
                 if state.can_build(src_card, dst_card):
                     dst_position = self._dst_position(dst_card, C.TABLEAU_POSITIONS[dst_idx])
                     self.foundation_to_tableau.append(Move(src_card, dst_position))
+
+    def print_moves(self):
+        print("Tableau to Tableau:")
+        for move in self.tableau_to_tableau:
+            print(f"\t{move}")
+        print("Stock to Tableau:")
+        for move in self.stock_to_tableau:
+            print(f"\t{move}")
+        print("Stock to Foundation:")
+        for move in self.stock_to_foundation:
+            print(f"\t{move}")
+        print("Tableau to Foundation:")
+        for move in self.tableau_to_foundation:
+            print(f"\t{move}")
+        print("Foundation to Tableau:")
+        for move in self.foundation_to_tableau:
+            print(f"\t{move}")
