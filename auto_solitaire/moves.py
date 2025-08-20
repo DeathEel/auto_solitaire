@@ -32,9 +32,13 @@ class MovesList:
                     continue
                 for dst_idx, dst_col in enumerate(state.tableau):
                     dst_card = self._top_card(dst_col)
-                    if state.can_build(src_card, dst_card):
-                        dst_position = self._dst_position(dst_card, C.TABLEAU_POSITIONS[dst_idx])
-                        self.tableau_to_tableau.append(Move(src_card, dst_position))
+                    if not state.can_build(src_card, dst_card):
+                        continue
+                    # Do not move King to empty column if King is already bottom card
+                    if src_card.rank == "K" and dst_card is None and src_card.is_bottom_card(state):
+                        continue
+                    dst_position = self._dst_position(dst_card, C.TABLEAU_POSITIONS[dst_idx])
+                    self.tableau_to_tableau.append(Move(src_card, dst_position))
 
         # Stock to Tableau
         for dst_idx, dst_col in enumerate(state.tableau):
