@@ -156,6 +156,7 @@ class GameState:
 
         # Case for reveal card
         if self.tableau[src_col] and self.tableau[src_col][-1] is None:
+            screen.capture()
             revealed_card = self.find_cards(screen.tableau_imgs[src_col], (src_col * 154, 550), 1, unfound_cards)[0]
             self.tableau[src_col][-1] = revealed_card
 
