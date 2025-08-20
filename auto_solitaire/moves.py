@@ -1,6 +1,4 @@
 import constants as C
-from game import Card, GameState
-from positions import Position
 
 class Move:
     def __init__(self, src_card, dst_position):

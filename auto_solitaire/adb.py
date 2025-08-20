@@ -2,7 +2,6 @@ import cv2
 import numpy as np
 import subprocess
 import time
-from positions import Position
 
 class Screen:
     def __init__(self):

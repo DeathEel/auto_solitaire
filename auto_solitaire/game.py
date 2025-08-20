@@ -1,7 +1,6 @@
 import cv2
 import numpy as np
 from collections import deque
-from adb import Screen
 from positions import Position
 import constants as C
 
