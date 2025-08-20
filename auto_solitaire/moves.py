@@ -3,7 +3,7 @@ from game import Card, GameState
 from positions import Position
 
 class Move:
-    def __init__(self, src_card: Card, dst_position: Position | None):
+    def __init__(self, src_card, dst_position):
         self.src_card = src_card
         self.dst_position = dst_position
 
@@ -11,25 +11,27 @@ class MovesList:
     def __init__(self):
         self.reset()
 
-    def reset(self) -> None:
+    def reset(self):
         self.tableau_to_tableau = []
         self.stock_to_tableau = []
-        self.tableau_to_foundation = []
         self.stock_to_foundation = []
+        self.tableau_to_foundation = []
         self.foundation_to_tableau = []
 
-    def _top_card(self, pile: list[Card]) -> Card | None:
+    def _top_card(self, pile):
         return pile[-1] if pile else None
 
-    def _dst_position(self, dst_card: Card | None, fallback_position: Position) -> Position:
+    def _dst_position(self, dst_card, fallback_position):
         return dst_card.position if dst_card else fallback_position
 
-    def generate(self, state: GameState) -> None:
+    def generate(self, state):
         self.reset()
 
         # Tableau to Tableau
         for src_col in state.tableau:
             for src_card in src_col:
+                if not src_card:
+                    continue
                 for dst_idx, dst_col in enumerate(state.tableau):
                     dst_card = self._top_card(dst_col)
                     if state.can_build(src_card, dst_card):
@@ -47,6 +49,15 @@ class MovesList:
                     dst_position = self._dst_position(dst_card, C.TABLEAU_POSITIONS[dst_idx])
                     self.waste_to_tableau.append(Move(src_card, dst_position))
 
+        # Stock to Foundation
+        if state.stock:
+            dst_stack = state.foundation[src_card.suit]
+            dst_card = self._top_card(dst_stack)
+            for src_card in state.stock:
+                if state.can_build_foundation(src_card, dst_card):
+                    dst_position = self._dst_position(dst_card, C.FOUNDATION_POSITIONS[src_card.suit])
+                    self.waste_to_foundation.append(Move(src_card, dst_position))
+
         # Tableau to Foundation
         for src_col in state.tableau:
             if not src_col:
@@ -57,15 +68,6 @@ class MovesList:
             if state.can_build_foundation(src_card, dst_card):
                 dst_position = self._dst_position(dst_card, C.FOUNDATION_POSITIONS[src_card.suit])
                 self.tableau_to_foundation.append(Move(src_card, dst_position))
-
-        # Stock to Foundation
-        if state.stock:
-            dst_stack = state.foundation[src_card.suit]
-            dst_card = self._top_card(dst_stack)
-            for src_card in state.stock:
-                if state.can_build_foundation(src_card, dst_card):
-                    dst_position = self._dst_position(dst_card, C.FOUNDATION_POSITIONS[src_card.suit])
-                    self.waste_to_foundation.append(Move(src_card, dst_position))
 
         # Foundation to Tableau
         for src_stack in state.foundation.values():

@@ -11,7 +11,7 @@ class Screen:
         self.waste_img = None
         self.capture()
 
-    def capture(self) -> None:
+    def capture(self):
         result = subprocess.run(
             ["adb", "exec-out", "screencap", "-p"],
 	        stdout=subprocess.PIPE
@@ -22,12 +22,12 @@ class Screen:
         self.tableau_imgs = [tableau_full_img[:, i * 154 : (i + 1) * 154] for i in range(7)] # divide into seven columns
         self.waste_img = self.full_img[:550, 610:910]
 
-    def tap(self, position: Position) -> None:
+    def tap(self, position):
         x, y = position
         subprocess.run(["adb", "shell", "input", "tap", str(x), str(y)])
         time.sleep(0.5)
 
-    def swipe(self, src: Position, dst: Position, duration_ms=300) -> None:
+    def swipe(self, src, dst, duration_ms=300):
         x1, y1 = src
         x2, y2 = dst
         subprocess.run(["adb", "shell", "input", "swipe", str(x1), str(y1), str(x2), str(y2), str(duration_ms)])

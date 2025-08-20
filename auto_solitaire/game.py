@@ -6,7 +6,7 @@ from positions import Position
 import constants as C
 
 class Card:
-    def __init__(self, rank: int, suit: int, position=None: Position):
+    def __init__(self, rank, suit, position=None):
         self.rank = C.RANKS[rank]
         self.suit = C.SUITS[suit]
         self.rank_num = rank
@@ -14,7 +14,7 @@ class Card:
         self.template_path = f"data/{self.rank}{self.suit}.png"
         self.position = position
 
-    def __repr__(self) -> str:
+    def __repr__(self):
         return f"{self.rank}{self.suit}"
 
     def update_position(self, offset: tuple[int, int]) -> None:
@@ -22,15 +22,15 @@ class Card:
         self.position.x += offset_x
         self.position.y += offset_y
 
-    def rank_difference(self, other: Card) -> int:
+    def rank_difference(self, other):
         return self.rank_num - other.rank_num
 
-    def is_same_color(self, other: Card) -> bool:
+    def is_same_color(self, other):
         self_color = "red" if self.suit in ["D", "H"] else "black"
         other_color = "red" if other.suit in ["D", "H"] else "black"
         return self_color == other_color
 
-    def is_bottom_card(self, state: GameState) -> bool:
+    def is_bottom_card(self, state):
         for col in state.tableau:
             if col and col[0] == self:
                 return True
@@ -43,7 +43,7 @@ class GameState:
         self.stock = deque([None] * 24)
         self.waste = []
 
-    def can_build(self, src_card: Card, dst_card: Card) -> bool:
+    def can_build(self, src_card, dst_card):
         # Cards are built on each other if descending rank and different colors
         if dst_card:
             return src_card.rank_difference(dst_card) == -1 and not src_card.is_same_color(dst_card)
@@ -51,7 +51,7 @@ class GameState:
         # Cards can be moved to empty column if it is King
         return src_card.rank == "K"
 
-    def can_build_foundation(self, src_card: Card, dst_card: Card) -> bool:
+    def can_build_foundation(self, src_card, dst_card):
         # Cards are built on foundation if ascending rank and same suit
         if dst_card:
             return src_card.rank_difference(dst_card) == 1 and src_card.suit == dst_card.suit
@@ -59,7 +59,7 @@ class GameState:
         # Cards be moved to empty foundation if it is Ace
         return src_card.rank == "A"
 
-    def has_card(self, rank: str) -> bool:
+    def has_card(self, rank):
         for col in self.tableau:
             for card in col:
                 if card.rank == rank:
@@ -69,14 +69,14 @@ class GameState:
                 return True
         return False
 
-    def has_card_in_tableau(self, rank: str) -> bool:
+    def find_card_in_tableau(self, rank):
         for col in self.tableau:
             for card in col:
                 if card.rank == rank:
-                    return True
-        return False
+                    return card
+        return None
 
-    def print_state(self) -> None:
+    def print_state(self):
         for i in range(7):
             col = self.tableau[i]
             print(f"TABLEAU COLUMN {i}: {col}")
@@ -87,7 +87,7 @@ class GameState:
         print(f"WASTE: {self.waste}")
 
     # Updates position of Card objects passed
-    def find_cards(self, screen: Screen, screen_offset: tuple[int, int], cards=[]: set[Card], amount_to_find: int, threshold=0.98: float) -> list:
+    def find_cards(self, screen, screen_offset, amount_to_find, cards=[], threshold=0.98):
         found_cards = []
         for card in cards:
             print(f"Finding {card}")
@@ -108,7 +108,7 @@ class GameState:
         cards.difference_update(found_cards)
         return found_cards
 
-    def move_tableau_to_tableau(self, screen: Screen, src_card: Card, dst_position: Position, unfound_cards=[]: set[Card]) -> None:
+    def move_tableau_to_tableau(self, screen, src_card, dst_position, unfound_cards=[]):
         screen.swipe(src_card.position, dst_position)
 
         src_col = src_card.position.col()
@@ -123,23 +123,23 @@ class GameState:
         # Case for reveal card
         if self.tableau[src_col] and self.tableau[src_col][-1] is None:
             screen.capture()
-            revealed_card = self.find_cards(screen.tableau_imgs[src_col], (src_col * 154, 550), unfound_cards, 1)[0]
+            revealed_card = self.find_cards(screen.tableau_imgs[src_col], (src_col * 154, 550), 1, unfound_cards)[0]
             self.tableau[src_col][-1] = revealed_card
 
         print(f"Moved {src_card} from tableau {src_col} to tableau {dst_col}")
 
-    def move_stock_to_waste(self, screen: Screen, unfound_cards=[]: set[Card]) -> None:
+    def move_stock_to_waste(self, screen, unfound_cards=[]):
         screen.tap(C.STOCK_POSITION)
         
         drawn_card = self.stock.popleft()
         if drawn_card is None:
             screen.capture()
-            drawn_card = self.find_cards(screen.waste_img, (610, 0), unfound_cards, 1)[0]
+            drawn_card = self.find_cards(screen.waste_img, (610, 0), 1, unfound_cards)[0]
         self.waste.append(drawn_card)
 
         print(f"Moved {drawn_card} from stock to waste")
 
-    def move_waste_to_tableau(self, screen: Screen, dst_position: Position) -> None:
+    def move_waste_to_tableau(self, screen, dst_position):
         screen.swipe(C.WASTE_POSITION, dst_position)
 
         src_card = self.waste.pop()
@@ -148,7 +148,7 @@ class GameState:
         
         print(f"Moved {src_card} from waste to tableau {dst_col}")
 
-    def move_waste_to_stock(self, screen: Screen) -> None:
+    def move_waste_to_stock(self, screen):
         screen.tap(C.STOCK_POSITION)
 
         for card in self.waste:
@@ -157,7 +157,7 @@ class GameState:
 
         print(f"Moved all of waste to stock")
 
-    def move_tableau_to_foundation(self, screen: Screen, src_card: Card, unfound_cards=[]: set[Card]) -> None:
+    def move_tableau_to_foundation(self, screen, src_card, unfound_cards=[]):
         screen.swipe(src_card.position, C.FOUNDATION_POSITIONS[src_card.suit])
 
         src_col = src_card.col()
@@ -166,12 +166,12 @@ class GameState:
         # Case for reveal card
         if self.tableau[src_col] and self.tableau[src_col][-1] is None:
             screen.capture()
-            revealed_card = self.find_cards(screen.tableau_imgs[src_col], (src_col * 154, 550), unfound_cards, 1)[0]
+            revealed_card = self.find_cards(screen.tableau_imgs[src_col], (src_col * 154, 550), 1, unfound_cards)[0]
             self.tableau[src_col][-1] = revealed_card
 
         print(f"Moved {src_card} from tableau {src_col} to foundation {src_card.suit}")
 
-    def move_waste_to_foundation(self, screen: Screen) -> None:
+    def move_waste_to_foundation(self, screen):
         src_card = self.waste.pop()
         screen.swipe(C.WASTE_POSITION, C.FOUNDATION_POSITIONS[src_card.suit])
 
@@ -179,7 +179,7 @@ class GameState:
 
         print(f"Moved {src_card} from waste to foundation {src_card.suit}")
 
-    def move_foundation_to_tableau(self, screen: Screen, src_card: Card, dst_position: Position) -> None:
+    def move_foundation_to_tableau(self, screen, src_card, dst_position):
         screen.swipe(src_card.position, dst_position)
 
         dst_col = dst_position.col()
@@ -187,23 +187,23 @@ class GameState:
 
         print(f"Moved {src_card} from foundation {src_card.suit} to tableau {dst_col}")
 
-    def move_stock_to_foundation(self, screen: Screen, rank: str) -> None:
+    def move_stock_to_foundation(self, screen, src_card):
         self.move_stock_to_waste(screen)
-        while self.waste[-1].rank != rank:
+        while self.waste[-1] != src_card:
             self.move_stock_to_waste(screen)
         self.move_waste_to_foundation(screen)
         self.reset_stock(screen)
 
-    def reset_stock(self, screen: Screen) -> None:
+    def reset_stock(self, screen):
         while self.waste:
             self.move_waste_to_stock(screen)
 
-    def move_autocomplete(self, screen: Screen) -> None:
+    def move_autocomplete(self, screen):
         screen.tap(C.AUTOCOMPLETE_POSITION)
 
         print(f"Autocompleted")
 
-    def move_undo(self, screen: Screen) -> None:
+    def move_undo(self, screen):
         screen.tap(C.UNDO_POSITION)
 
         print(f"Undone")

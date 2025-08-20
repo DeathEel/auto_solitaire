@@ -1,5 +1,5 @@
 class Position:
-    def __init__(self, x: int, y: int):
+    def __init__(self, x, y):
         self.x = x
         self.y = y
 
@@ -7,11 +7,11 @@ class Position:
         yield self.x
         yield self.y
 
-    def __repr__(self) -> str:
+    def __repr__(self):
         return f"({self.x}, {self.y})"
 
-    def __call__(self) -> tuple[int, int]:
+    def __call__(self):
         return (self.x, self.y)
 
-    def col(self) -> int:
+    def col(self):
         return round((self.x - 84) / 154)
