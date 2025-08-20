@@ -67,7 +67,7 @@ class GameState:
         print(f"WASTE: {self.waste}")
 
     # Updates position of Card objects passed
-    def find_cards(self, screen: Screen, screen_offset: tuple[int, int], cards: set, amount_to_find: int, threshold=0.98: float) -> list:
+    def find_cards(self, screen: Screen, screen_offset: tuple[int, int], cards=[]: set[Card], amount_to_find: int, threshold=0.98: float) -> list:
         found_cards = []
         for card in cards:
             print(f"Finding {card}")
@@ -88,7 +88,7 @@ class GameState:
         cards.difference_update(found_cards)
         return found_cards
 
-    def move_tableau_to_tableau(self, screen: Screen, src_card: Card, dst_card: Card, unfound_cards: set) -> None:
+    def move_tableau_to_tableau(self, screen: Screen, src_card: Card, dst_card: Card, unfound_cards=[]: set[Card]) -> None:
         screen.swipe(src_card.position, dst_card.position)
 
         src_col = src_card.col()
@@ -108,7 +108,7 @@ class GameState:
 
         print(f"Moved {src_card} from tableau {src_col} to tableau {dst_col}")
 
-    def move_stock_to_waste(self, screen: Screen, unfound_cards: set) -> None:
+    def move_stock_to_waste(self, screen: Screen, unfound_cards=[]: set[Card]) -> None:
         screen.tap(C.STOCK_POSITION)
         
         drawn_card = self.stock.popleft()
@@ -137,7 +137,7 @@ class GameState:
 
         print(f"Moved all of waste to stock")
 
-    def move_tableau_to_foundation(self, screen: Screen, src_card: Card, unfound_cards: set) -> None:
+    def move_tableau_to_foundation(self, screen: Screen, src_card: Card, unfound_cards=[]: set[Card]) -> None:
         screen.swipe(src_card.position, C.FOUNDATION_POSITIONS[src_card.suit])
 
         src_col = src_card.col()
@@ -166,3 +166,13 @@ class GameState:
         self.tableau[dst_col].append(self.foundation[src_card.suit].pop())
 
         print(f"Moved {src_card} from foundation {src_card.suit} to tableau {dst_col}")
+
+    def move_autocomplete(self, screen: Screen) -> None:
+        screen.tap(C.AUTOCOMPLETE_POSITION)
+
+        print(f"Autocompleted")
+
+    def move_undo(self, screen: Screen) -> None:
+        screen.tap(C.UNDO_POSITION)
+
+        print(f"Undone")
