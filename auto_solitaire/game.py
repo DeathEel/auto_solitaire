@@ -152,7 +152,7 @@ class GameState:
         self.tableau[dst_col].extend(cut)
 
         # Update positions of all cards in column
-        self.update_position_tableau(src_card, dst_col)
+        self.update_positions_tableau(src_card, dst_col)
 
         # Case for reveal card
         if self.tableau[src_col] and self.tableau[src_col][-1] is None:
@@ -180,7 +180,7 @@ class GameState:
         self.tableau[dst_col].append(src_card)
 
         # Update position of card
-        self.update_position_tableau(src_card, dst_col)
+        self.update_positions_tableau(src_card, dst_col)
 
         print(f"Moved {src_card} from waste to tableau {dst_col}")
 
@@ -222,7 +222,7 @@ class GameState:
         self.tableau[dst_col].append(self.foundation[src_card.suit].pop())
 
         # Update position of card
-        self.update_position_tableau(src_card, dst_col)
+        self.update_positions_tableau(src_card, dst_col)
 
         print(f"Moved {src_card} from foundation {src_card.suit} to tableau {dst_col}")
 
