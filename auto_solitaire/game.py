@@ -125,6 +125,9 @@ class GameState:
         del self.tableau[src_col][src_idx:]
         self.tableau[dst_col].extend(cut)
 
+        # Update position of card
+        find_cards(screen.tableau_imgs[dst_col], (dst_col * 154, 550), 1, src_card)
+
         # Case for reveal card
         if self.tableau[src_col] and self.tableau[src_col][-1] is None:
             screen.capture()
@@ -150,7 +153,10 @@ class GameState:
         src_card = self.waste.pop()
         dst_col = dst_position.col()
         self.tableau[dst_col].append(src_card)
-        
+
+        # Update position of card
+        find_cards(screen.tableau_imgs[dst_col], (dst_col * 154, 550), 1, src_card)
+
         print(f"Moved {src_card} from waste to tableau {dst_col}")
 
     def move_waste_to_stock(self, screen):
@@ -189,6 +195,9 @@ class GameState:
 
         dst_col = dst_position.col()
         self.tableau[dst_col].append(self.foundation[src_card.suit].pop())
+
+        # Update position of card
+        find_cards(screen.tableau_imgs[dst_col], (dst_col * 154, 550), 1, src_card)
 
         print(f"Moved {src_card} from foundation {src_card.suit} to tableau {dst_col}")
 
