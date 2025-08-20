@@ -47,7 +47,7 @@ class MovesList:
             for src_card in state.stock:
                 if state.can_build(src_card, dst_card):
                     dst_position = self._dst_position(dst_card, C.TABLEAU_POSITIONS[dst_idx])
-                    self.waste_to_tableau.append(Move(src_card, dst_position))
+                    self.stock_to_tableau.append(Move(src_card, dst_position))
 
         # Stock to Foundation
         if state.stock:
@@ -56,7 +56,7 @@ class MovesList:
             for src_card in state.stock:
                 if state.can_build_foundation(src_card, dst_card):
                     dst_position = self._dst_position(dst_card, C.FOUNDATION_POSITIONS[src_card.suit])
-                    self.waste_to_foundation.append(Move(src_card, dst_position))
+                    self.stock_to_foundation.append(Move(src_card, dst_position))
 
         # Tableau to Foundation
         for src_col in state.tableau:
