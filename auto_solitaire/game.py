@@ -67,7 +67,7 @@ class GameState:
     def has_playable_king(self):
         for col in self.tableau:
             for card in col:
-                if card.rank == "K" and not card.is_bottom_card(self):
+                if card and card.rank == "K" and not card.is_bottom_card(self):
                     return True
         for card in self.stock:
             if card.rank == "K":
