@@ -13,6 +13,7 @@ class Screen:
             self.capture()
         except cv2.error as e:
             if "-215:Assertion failed" in str(e) and "!buf.empty()" in str(e):
+                print("Use `adb kill-server` and `adb start-server` to restart the daemon.")
                 sys.exit(1)
             else:
                 raise
