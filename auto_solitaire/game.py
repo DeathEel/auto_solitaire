@@ -262,11 +262,15 @@ class GameState:
         self.reset_stock(screen)
 
     def move_stock_to_tableau(self, screen, src_card, dst_position):
-        self.move_stock_to_waste(screen)
-        while self.waste[-1] != src_card:
+        if self.waste and self.waste[-1] == src_card:
+            self.move_waste_to_tableau(screen, dst_position)
+            return
+        elif src_card not in self.stock:
+            self.reset_stock(screen)
+
+        while not self.waste or self.waste[-1] != src_card:
             self.move_stock_to_waste(screen)
         self.move_waste_to_tableau(screen, dst_position)
-        self.reset_stock(screen)
 
     def reset_stock(self, screen):
         while self.stock:
