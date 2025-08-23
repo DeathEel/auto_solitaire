@@ -33,8 +33,23 @@ class Solver:
         self.state = state
         self.moves_list = moves_list
         self.history = History()
+        self.seen_states = set()
+        self.last_was_undo = False
 
     def play_move(self, screen, unfound_cards):
+        # Check for duplicate game state
+        if self.state in self.seen_states:
+            print(f"Undoing")
+            previous_state = self.history.pop()
+            if previous_state:
+                self.state.move_undo(screen)
+                self.state = previous_state
+                self.last_was_undo = True
+                return
+
+        self.seen_states.add(self.state)
+        self.last_was_undo = False
+
         self.history.push(self.state)
 
         # Autocomplete if available
@@ -156,8 +171,9 @@ class Solver:
         print(f"Undoing")
         previous_state = self.history.pop()
         if previous_state:
-            self.state = previous_state
             self.state.move_undo(screen)
+            self.state = previous_state
+            self.last_was_undo = True
 
 class History:
     def __init__(self):

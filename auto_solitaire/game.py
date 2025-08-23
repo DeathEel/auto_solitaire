@@ -48,6 +48,28 @@ class GameState:
         self.stock = deque([None] * 24)
         self.waste = []
 
+    def __hash__(self):
+        def card_to_int(c):
+            return c.suit_num * 13 + c.rank_num if c else -1
+
+        return hash((
+            tuple(tuple(card_to_int(c) for c in col) for col in self.tableau),
+            tuple(tuple(card_to_int(c) for c in self.foundation[suit]) for suit in C.SUITS),
+            tuple(card_to_int(c) for c in self.stock),
+            tuple(card_to_int(c) for c in self.waste)
+        ))
+
+    def __eq__(self, other):
+        if not isinstance(other, GameState):
+            return False
+
+        return (
+            all(self_col == other_col for self_col, other_col in zip(self.tableau, other.tableau)) and
+            all(self.foundation[suit] == other.foundation[suit] for suit in C.SUITS) and
+            self.stock == other.stock and
+            self.waste == other.waste
+        )
+
     def can_build(self, src_card, dst_card):
         # Cards are built on each other if descending rank and different colors
         if dst_card:
