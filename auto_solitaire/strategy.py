@@ -170,11 +170,3 @@ class History:
         if self.stack:
             return self.stack.pop()
         return None
-
-    def peek(self):
-        if self.stack:
-            return self.stack[-1]
-        return None
-
-    def is_empty(self):
-        return len(self.stack) == 0
