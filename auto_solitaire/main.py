@@ -21,6 +21,7 @@ def main():
     state = GameState()
 
     # Find tableau cards and update game state
+    print("Scanning tableau cards...")
     for i in range(7):
         found_card = state.find_cards(screen.tableau_imgs[i], (i * 154, 550), 1, unfound_cards)[0]
         state.tableau[found_card.position.col()].append(found_card)
@@ -28,6 +29,7 @@ def main():
     state.print_state()
 
     # Run through stock and update game state
+    print("Scanning stock cards...")
     for _ in range(24):
         state.move_stock_to_waste(screen, unfound_cards)
         state.print_state()
