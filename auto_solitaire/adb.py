@@ -1,4 +1,5 @@
 import cv2
+import sys
 import numpy as np
 import subprocess
 import time
@@ -8,7 +9,13 @@ class Screen:
         self.full_img = None
         self.tableau_imgs = None
         self.waste_img = None
-        self.capture()
+        try:
+            self.capture()
+        except cv2.error as e:
+            if "-215:Assertion failed" in str(e) and "!buf.empty()" in str(e):
+                sys.exit(1)
+            else:
+                raise
 
     def capture(self):
         result = subprocess.run(
