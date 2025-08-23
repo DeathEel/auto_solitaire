@@ -85,16 +85,16 @@ class MovesList:
     def print_moves(self):
         print("Tableau to Tableau:")
         for move in self.tableau_to_tableau:
-            print(f"\t{move.src_card} to {move.dst_position}")
+            print(f"\t{move.src_card} {move.src_card.position} to {move.dst_position}")
         print("Stock to Tableau:")
         for move in self.stock_to_tableau:
-            print(f"\t{move.src_card} to {move.dst_position}")
+            print(f"\t{move.src_card} {move.src_card.position} to {move.dst_position}")
         print("Stock to Foundation:")
         for move in self.stock_to_foundation:
-            print(f"\t{move.src_card} to {move.dst_position}")
+            print(f"\t{move.src_card} {move.src_card.position} to {move.dst_position}")
         print("Tableau to Foundation:")
         for move in self.tableau_to_foundation:
-            print(f"\t{move.src_card} to {move.dst_position}")
+            print(f"\t{move.src_card} {move.src_card.position} to {move.dst_position}")
         print("Foundation to Tableau:")
         for move in self.foundation_to_tableau:
-            print(f"\t{move.src_card} to {move.dst_position}")
+            print(f"\t{move.src_card} {move.src_card.position} to {move.dst_position}")
