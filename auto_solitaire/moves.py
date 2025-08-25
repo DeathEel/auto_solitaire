@@ -42,18 +42,18 @@ class MovesList:
 
         # Stock to Tableau
         for dst_idx, dst_col in enumerate(state.tableau):
-            # Verify stock is not empty
-            if not state.stock:
+            # Verify stock and waste is not empty
+            if not state.stock and not state.waste:
                 break
             dst_card = self._top_card(dst_col)
-            for src_card in state.stock:
+            for src_card in zip(state.stock, state.waste):
                 if state.can_build(src_card, dst_card):
                     dst_position = self._dst_position(dst_card, C.TABLEAU_POSITIONS[dst_idx])
                     self.stock_to_tableau.append(Move(src_card, dst_position))
 
         # Stock to Foundation
-        if state.stock:
-            for src_card in state.stock:
+        if state.stock or state.waste:
+            for src_card in zip(state.stock, state.waste):
                 dst_stack = state.foundation[src_card.suit]
                 dst_card = self._top_card(dst_stack)
                 if state.can_build_foundation(src_card, dst_card):
