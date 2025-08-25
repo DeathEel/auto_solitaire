@@ -261,7 +261,7 @@ class GameState:
         elif src_card not in self.stock:
             self.reset_stock(screen)
 
-        while not self.waste and self.waste[-1] != src_card:
+        while not self.waste or self.waste[-1] != src_card:
             self.move_stock_to_waste(screen)
         self.move_waste_to_foundation(screen)
 
