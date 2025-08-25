@@ -239,6 +239,7 @@ class GameState:
         src_card = self.waste.pop()
         screen.swipe(C.WASTE_POSITION, C.FOUNDATION_POSITIONS[src_card.suit])
 
+        src_card.position = C.FOUNDATION_POSITIONS[src_card.suit]
         self.foundation[src_card.suit].append(src_card)
 
         #print(f"Moved {src_card} from waste to foundation {src_card.suit}")
