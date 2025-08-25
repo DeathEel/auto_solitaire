@@ -255,11 +255,15 @@ class GameState:
         #print(f"Moved {src_card} from foundation {src_card.suit} to tableau {dst_col}")
 
     def move_stock_to_foundation(self, screen, src_card):
-        self.move_stock_to_waste(screen)
-        while self.waste[-1] != src_card:
+        if self.waste and self.waste[-1] == src_card:
+            self.move_waste_to_foundation(screen)
+            return
+        elif src_card not in self.stock:
+            self.reset_stock(screen)
+
+        while not self.waste and self.waste[-1] != src_card:
             self.move_stock_to_waste(screen)
         self.move_waste_to_foundation(screen)
-        self.reset_stock(screen)
 
     def move_stock_to_tableau(self, screen, src_card, dst_position):
         if self.waste and self.waste[-1] == src_card:
