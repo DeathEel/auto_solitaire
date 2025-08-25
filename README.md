@@ -8,7 +8,11 @@ This Python application is designed to win every game of [Solitaire](https://pla
 - [License](#license)
 
 ## Features
-- Solves Solitaire, drawing one card from the stock at a time and undoing as many times as necessary.
+- Interfaces with Samsung Android S23+, which hosts the Solitaire game.
+- Uses a game variant that allows unlimited undos and draws from the stock one card at a time.
+- Reads game state by taking screen captures using OpenCV and updating an internal data structure.
+- Sends inputs to device using Android Debug Bridge.
+- Uses a simple set of heuristics to make more efficient moves.
 
 ## Installation
 1. Clone the repository
