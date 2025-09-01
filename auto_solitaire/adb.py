@@ -32,7 +32,7 @@ class Screen:
     def tap(self, position):
         x, y = position
         subprocess.run(["adb", "shell", "input", "tap", str(x), str(y)])
-        time.sleep(0.15)
+        time.sleep(0.5)
 
     def swipe(self, src, dst):
         x1, y1 = src
@@ -40,11 +40,18 @@ class Screen:
 
         # Aim past to get more leniency
         if x1 > x2:
-            x2 -= 35
+            x2 -= 25
         else:
-            x2 += 35
+            x2 += 25
 
         duration_ms = int(((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5)
         #print(duration_ms)
         subprocess.run(["adb", "shell", "input", "swipe", str(x1), str(y1), str(x2), str(y2), str(duration_ms)])
-        time.sleep(0.15)
+        time.sleep(0.5)
+
+    def point(self, position):
+        img_copy = self.full_img.copy()
+        cv2.circle(img_copy, position, radius=1, color=(255, 0, 0), thickness=-1)
+        cv2.imshow("Point", img_copy)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
