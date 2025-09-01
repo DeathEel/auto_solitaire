@@ -37,9 +37,10 @@ class Solver:
         self.last_was_undo = False
 
     def play_move(self, screen, unfound_cards):
+        print("========== CHOSE MOVE ==========")
         # Check for duplicate game state
         if self.state in self.seen_states:
-            print(f"Undoing")
+            print(f"Undoing\n")
             previous_state = self.history.pop()
             if previous_state:
                 self.state.move_undo(screen)
@@ -50,11 +51,18 @@ class Solver:
         self.seen_states.add(self.state)
         self.last_was_undo = False
 
+        with open("states.log", "w") as f:
+            f.write(f"Current state hash: {hash(self.state)}\n")
+            f.write(f"Current state:\n{self.state}\n\n")
+            for idx, state in enumerate(self.seen_states):
+                f.write(f"Past state hash {idx}: {hash(state)}\n")
+                f.write(f"Past state {idx}:\n{state}\n\n")
+
         self.history.push(self.state)
 
         # Autocomplete if available
         if not unfound_cards:
-            print(f"Autocompleting")
+            print(f"Autocompleting\n")
             self.state.move_autocomplete(screen)
             return True
 
@@ -62,13 +70,13 @@ class Solver:
         for move in self.moves_list.stock_to_foundation:
             if move.src_card.rank != "A":
                 continue
-            print(f"Moving {move.src_card} from stock to foundation")
+            print(f"Moving {move.src_card} from stock to foundation\n")
             self.state.move_stock_to_foundation(screen, move.src_card)
             return False
         for move in self.moves_list.stock_to_foundation:
             if move.src_card.rank != "2":
                 continue
-            print(f"Moving {move.src_card} from stock to foundation")
+            print(f"Moving {move.src_card} from stock to foundation\n")
             self.state.move_stock_to_foundation(screen, move.src_card)
             return False
 
@@ -76,13 +84,13 @@ class Solver:
         for move in self.moves_list.tableau_to_foundation:
             if move.src_card.rank != "A":
                 continue
-            print(f"Moving {move.src_card} from tableau to foundation")
+            print(f"Moving {move.src_card} from tableau to foundation\n")
             self.state.move_tableau_to_foundation(screen, move.src_card, unfound_cards)
             return False
         for move in self.moves_list.tableau_to_foundation:
             if move.src_card.rank != "2":
                 continue
-            print(f"Moving {move.src_card} from tableau to foundation")
+            print(f"Moving {move.src_card} from tableau to foundation\n")
             self.state.move_tableau_to_foundation(screen, move.src_card, unfound_cards)
             return False
 
@@ -90,7 +98,7 @@ class Solver:
         candidate_moves = filter_moves(self.moves_list.tableau_to_tableau, lambda move: move.src_card.rank == "K" and not move.src_card.is_bottom_card(self.state))
         if candidate_moves:
             move = pick_king_for_empty_column(self.state, candidate_moves)
-            print(f"Moving {move.src_card} from tableau to empty column {move.dst_position.col()}")
+            print(f"Moving {move.src_card} from tableau to empty column {move.dst_position.col()}\n")
             self.state.move_tableau_to_tableau(screen, move.src_card, move.dst_position, unfound_cards)
             return False
 
@@ -98,7 +106,7 @@ class Solver:
         candidate_moves = filter_moves(self.moves_list.stock_to_tableau, lambda move: move.src_card.rank == "K")
         if candidate_moves:
             move = pick_king_for_empty_column(self.state, candidate_moves)
-            print(f"Moving {move.src_card} from stock to empty column {move.dst_position.col()}")
+            print(f"Moving {move.src_card} from stock to empty column {move.dst_position.col()}\n")
             self.state.move_stock_to_tableau(screen, move.src_card, move.dst_position)
             return False
 
@@ -107,13 +115,13 @@ class Solver:
             for move in self.moves_list.tableau_to_tableau:
                 if move.src_card.rank == "K" or not move.src_card.is_bottom_card(self.state):
                     continue
-                print(f"Moving {move.src_card} to tableau to create empty column for K")
+                print(f"Moving {move.src_card} to tableau to create empty column for K\n")
                 self.state.move_tableau_to_tableau(screen, move.src_card, move.dst_position)
                 return False
             for move in self.moves_list.tableau_to_foundation:
                 if move.src_card.rank == "K" or not move.src_card.is_bottom_card(self.state):
                     continue
-                print(f"Moving {move.src_card} to foundation to create empty column for K")
+                print(f"Moving {move.src_card} to foundation to create empty column for K\n")
                 self.state.move_tableau_to_foundation(screen, move.src_card)
                 return False
 
@@ -121,7 +129,7 @@ class Solver:
         candidate_moves = filter_moves(self.moves_list.tableau_to_tableau, lambda move: move.src_card.card_behind(self.state) is None and not move.src_card.is_bottom_card(self.state))
         if candidate_moves:
             move = pick_tableau_move_by_king(self.state, candidate_moves)
-            print(f"Moving {move.src_card} from tableau to tableau to expose hidden cards")
+            print(f"Moving {move.src_card} from tableau to tableau to expose hidden cards\n")
             self.state.move_tableau_to_tableau(screen, move.src_card, move.dst_position, unfound_cards)
             return False
 
@@ -129,46 +137,46 @@ class Solver:
         candidate_moves = filter_moves(self.moves_list.tableau_to_foundation, lambda move: move.src_card.card_behind(self.state) is None and not move.src_card.is_bottom_card(self.state))
         if candidate_moves:
             move = pick_tableau_move_by_king(self.state, candidate_moves)
-            print(f"Moving {move.src_card} from tableau to foundation to expose hidden cards")
+            print(f"Moving {move.src_card} from tableau to foundation to expose hidden cards\n")
             self.state.move_tableau_to_foundation(screen, move.src_card, unfound_cards)
             return False
 
         # Play from stock to tableau
         for move in self.moves_list.stock_to_tableau:
-            print(f"Moving {move.src_card} from stock to tableau")
+            print(f"Moving {move.src_card} from stock to tableau\n")
             self.state.move_stock_to_tableau(screen, move.src_card, move.dst_position)
             return False
 
         # Play from tableau to foundation:
         for move in self.moves_list.tableau_to_foundation:
-            print(f"Moving {move.src_card} from tableau to foundation")
+            print(f"Moving {move.src_card} from tableau to foundation\n")
             self.state.move_tableau_to_foundation(screen, move.src_card)
             return False
 
         # Play everything else
         for move in self.moves_list.tableau_to_tableau:
-            print(f"Moving {move.src_card} to tableau column {move.dst_position.col()}")
+            print(f"Moving {move.src_card} to tableau column {move.dst_position.col()}\n")
             self.state.move_tableau_to_tableau(screen, move.src_card, move.dst_position, unfound_cards)
             return False
         for move in self.moves_list.stock_to_tableau:
-            print(f"Moving {move.src_card} to tableau column {move.dst_position.col()}")
+            print(f"Moving {move.src_card} to tableau column {move.dst_position.col()}\n")
             self.state.move_stock_to_tableau(screen, move.src_card, move.dst_position)
             return False
         for move in self.moves_list.stock_to_foundation:
-            print(f"Moving {move.src_card} to foundation")
+            print(f"Moving {move.src_card} to foundation\n")
             self.state.move_stock_to_foundation(screen, move.src_card)
             return False
         for move in self.moves_list.tableau_to_foundation:
-            print(f"Moving {move.src_card} to foundation")
+            print(f"Moving {move.src_card} to foundation\n")
             self.state.move_tableau_to_foundation(screen, move.src_card, unfound_cards)
             return False
         for move in self.moves_list.foundation_to_tableau:
-            print(f"Moving {move.src_card} to tableau column {move.dst_position.col()}")
+            print(f"Moving {move.src_card} to tableau column {move.dst_position.col()}\n")
             self.state.move_foundation_to_tableau(screen, move.src_card, move.dst_position)
             return False
 
         # Undo if out of moves
-        print(f"Undoing")
+        print(f"Undoing\n")
         previous_state = self.history.pop()
         if previous_state:
             self.state.move_undo(screen)
