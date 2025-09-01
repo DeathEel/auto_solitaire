@@ -16,7 +16,7 @@ class Card:
     def __repr__(self):
         return f"{self.rank}{self.suit}"
 
-    def update_position(self, offset: tuple[int, int]) -> None:
+    def update_position(self, offset):
         offset_x, offset_y = offset
         self.position.x += offset_x
         self.position.y += offset_y
@@ -70,6 +70,16 @@ class GameState:
             self.waste == other.waste
         )
 
+    def __repr__(self):
+        string = "========== GAME STATE ==========\n"
+        for i in range(7):
+            string += f"TABLEAU COLUMN {i}: {self.tableau[i]}\n"
+        for i in C.SUITS:
+            string += f"FOUNDATION COLUMN {i}: {self.foundation[i]}\n"
+        string += f"STOCK: {self.stock}\nWASTE: {self.waste}\n"
+
+        return string
+
     def can_build(self, src_card, dst_card):
         # Cards are built on each other if descending rank and different colors
         if dst_card:
@@ -102,16 +112,6 @@ class GameState:
                 if card and card.rank == rank:
                     return card
         return None
-
-    def print_state(self):
-        for i in range(7):
-            col = self.tableau[i]
-            print(f"TABLEAU COLUMN {i}: {col}")
-        for i in C.SUITS:
-            col = self.foundation[i]
-            print(f"FOUNDATION COLUMN {i}: {col}")
-        print(f"STOCK: {self.stock}")
-        print(f"WASTE: {self.waste}")
 
     # Updates position of Card objects passed
     def find_cards(self, screen, screen_offset, amount_to_find, cards=[], threshold=0.98):
@@ -155,7 +155,7 @@ class GameState:
         #print(f"Facedown count is {facedown_count}. Faceup count is {faceup_count}")
         x, y = C.TABLEAU_POSITIONS[dst_col]
         src_card.position = Position(x, y)
-        src_card.position.y += 30 * facedown_count + 74 * faceup_count
+        src_card.position.y += 30 * facedown_count + 80 * faceup_count
         #print(f"New {src_card} position is {src_card.position}")
 
         # Cut the pile after the src_card (don't include it)
@@ -163,7 +163,7 @@ class GameState:
         for idx, card in enumerate(cut):
             x, y = src_card.position
             card.position = Position(x, y)
-            card.position.y += 74 * (idx + 1)
+            card.position.y += 80 * (idx + 1)
             #print(f"New {card} position is {card.position}")
 
     def move_tableau_to_tableau(self, screen, src_card, dst_position, unfound_cards=[]):
@@ -226,7 +226,8 @@ class GameState:
 
         src_col = src_card.position.col()
         self.foundation[src_card.suit].append(self.tableau[src_col].pop())
-
+        src_card.position = C.FOUNDATION_POSITIONS[src_card.suit]
+        
         # Case for reveal card
         if self.tableau[src_col] and self.tableau[src_col][-1] is None:
             screen.capture()
@@ -245,7 +246,7 @@ class GameState:
         #print(f"Moved {src_card} from waste to foundation {src_card.suit}")
 
     def move_foundation_to_tableau(self, screen, src_card, dst_position):
-        screen.swipe(src_card.position, dst_position)
+        screen.swipe(C.FOUNDATION_POSITIONS[src_card.suit], dst_position)
 
         dst_col = dst_position.col()
         self.tableau[dst_col].append(self.foundation[src_card.suit].pop())
