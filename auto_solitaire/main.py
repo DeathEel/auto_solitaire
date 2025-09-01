@@ -20,28 +20,39 @@ def main():
     # Set up game state
     state = GameState()
 
+    #''' Comment this to have the program scan the board / Uncomment this to hardcode the board
     # Find tableau cards and update game state
     print("Scanning tableau cards...")
     for i in range(7):
         found_card = state.find_cards(screen.tableau_imgs[i], (i * 154, 550), 1, unfound_cards)[0]
         state.tableau[found_card.position.col()].append(found_card)
     #print(unfound_cards)
-    state.print_state()
+    print(state)
 
     # Run through stock and update game state
     print("Scanning stock cards...")
     for _ in range(24):
         state.move_stock_to_waste(screen, unfound_cards)
-        state.print_state()
+        print(state)
     state.move_waste_to_stock(screen)
     #print(unfound_cards)
-    state.print_state()
+    print(state)
+
+    # Print tableau and stock as string (to hardcode for debugging)
+    tableau = ""
+    stock = ""
+    for i in range(7):
+        tableau += f"{state.tableau[i][-1]}"
+    for i in range(24):
+        stock += f"{state.stock[i]}"
+    print(tableau)
+    print(stock)
     '''
     # Hardcode tableau and stock
-    tableau = "8DKC9STH7S7C6H"
+    tableau = "QS9CAH8D3CJDTC"
     from positions import Position
     tableau_positions = [Position(84, 643), Position(238, 673), Position(390, 703), Position(542, 733), Position(694, 763), Position(864, 793), Position(1000, 823)]
-    stock = "9D5D3CQS7H8HAC8C7DKH2H2C4S4HQHJHJDKS6DKD2D9H3S6S"
+    stock = "TSTHKD3SJH6CKC7CAS9H5D5H2H7S6H4SQDKHQC4C4DTD8S7D"
     for i in range(0, len(tableau), 2):
         popped_card = pop_card_from_unfound(unfound_cards, tableau[i], tableau[i + 1])
         popped_card.position = tableau_positions[i // 2]
@@ -52,8 +63,8 @@ def main():
         state.stock.popleft()
         state.stock.append(popped_card)
         unfound_cards.difference_update([popped_card])
-    state.print_state()
-    '''
+    print(state)
+    #'''
     # Initialize moves list and solver
     solver = Solver(state, MovesList())
 
@@ -61,11 +72,13 @@ def main():
     is_finished = False
     while not is_finished:
         solver.moves_list.generate(solver.state)
-        solver.moves_list.print_moves()
+        print(solver.moves_list)
         #input("Press enter to play next move.")
         is_finished = solver.play_move(screen, unfound_cards)
-        solver.state.print_state()
+        print(solver.state)
     print("Game is finished.")
     
 if __name__ == "__main__":
     main()
+    #screen = Screen()
+    #screen.point((390, 643))
