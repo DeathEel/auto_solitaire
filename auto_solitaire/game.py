@@ -41,6 +41,15 @@ class Card:
         col = self.position.col()
         return state.tableau[col][state.tableau[col].index(self) - 1]
 
+    def __eq__(self, other):
+        if not isinstance(other, Card):
+            return False
+
+        return self.rank == other.rank and self.suit == other.suit
+
+    def __hash__(self):
+        return hash((self.rank, self.suit))
+
 class GameState:
     def __init__(self):
         self.tableau = [[None] * i for i in range(7)]
