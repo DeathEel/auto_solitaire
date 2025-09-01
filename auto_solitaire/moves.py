@@ -43,17 +43,17 @@ class MovesList:
         # Stock to Tableau
         for dst_idx, dst_col in enumerate(state.tableau):
             # Verify stock and waste is not empty
-            if not zip(state.stock, state.waste):
+            if not state.stock and not state.waste:
                 break
             dst_card = self._top_card(dst_col)
-            for src_card in zip(state.stock, state.waste):
+            for src_card in list(state.stock) + list(state.waste):
                 if state.can_build(src_card, dst_card):
                     dst_position = self._dst_position(dst_card, C.TABLEAU_POSITIONS[dst_idx])
                     self.stock_to_tableau.append(Move(src_card, dst_position))
 
         # Stock to Foundation
-        if zip(state.stock, state.waste):
-            for src_card in zip(state.stock, state.waste):
+        if state.stock or state.waste:
+            for src_card in list(state.stock) + list(state.waste):
                 dst_stack = state.foundation[src_card.suit]
                 dst_card = self._top_card(dst_stack)
                 if state.can_build_foundation(src_card, dst_card):
@@ -82,19 +82,21 @@ class MovesList:
                     dst_position = self._dst_position(dst_card, C.TABLEAU_POSITIONS[dst_idx])
                     self.foundation_to_tableau.append(Move(src_card, dst_position))
 
-    def print_moves(self):
-        print("Tableau to Tableau:")
+    def __repr__(self):
+        string = "========== MOVES LIST ==========\nTableau to Tableau:\n"
         for move in self.tableau_to_tableau:
-            print(f"\t{move.src_card} {move.src_card.position} to {move.dst_position}")
-        print("Stock to Tableau:")
+            string += f"\t{move.src_card} {move.src_card.position} to {move.dst_position}\n"
+        string += "Stock to Tableau:\n"
         for move in self.stock_to_tableau:
-            print(f"\t{move.src_card} {move.src_card.position} to {move.dst_position}")
-        print("Stock to Foundation:")
+             string += f"\t{move.src_card} {move.src_card.position} to {move.dst_position}\n"
+        string += "Stock to Foundation:\n"
         for move in self.stock_to_foundation:
-            print(f"\t{move.src_card} {move.src_card.position} to {move.dst_position}")
-        print("Tableau to Foundation:")
+              string += f"\t{move.src_card} {move.src_card.position} to {move.dst_position}\n"
+        string += "Tableau to Foundation:\n"
         for move in self.tableau_to_foundation:
-            print(f"\t{move.src_card} {move.src_card.position} to {move.dst_position}")
-        print("Foundation to Tableau:")
+            string += f"\t{move.src_card} {move.src_card.position} to {move.dst_position}\n"
+        string += "Foundation to Tableau:\n"
         for move in self.foundation_to_tableau:
-            print(f"\t{move.src_card} {move.src_card.position} to {move.dst_position}")
+            string += f"\t{move.src_card} {move.src_card.position} to {move.dst_position}\n"
+
+        return string
