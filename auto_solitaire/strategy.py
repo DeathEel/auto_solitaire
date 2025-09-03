@@ -29,166 +29,176 @@ def filter_moves(moves, condition):
     return [move for move in moves if condition(move)]
                 
 class Solver:
-    def __init__(self, state, moves_list):
+    def __init__(self, state, unordered_moves_list):
         self.state = state
-        self.moves_list = moves_list
+        self.unordered_moves_list = unordered_moves_list
         self.history = History()
         self.seen_states = set()
         self.last_was_undo = False
 
-    def play_move(self, screen, unfound_cards):
-        print("========== CHOSE MOVE ==========")
-        # Check for duplicate game state
-        if self.state in self.seen_states:
-            print(f"Undoing\n")
-            previous_state = self.history.pop()
-            if previous_state:
-                self.state.move_undo(screen)
-                self.state = previous_state
-                self.last_was_undo = True
-                return
-
-        self.seen_states.add(self.state)
-        self.last_was_undo = False
-
-        with open("states.log", "w") as f:
-            f.write(f"Current state hash: {hash(self.state)}\n")
-            f.write(f"Current state:\n{self.state}\n\n")
-            for idx, state in enumerate(self.seen_states):
-                f.write(f"Past state hash {idx}: {hash(state)}\n")
-                f.write(f"Past state {idx}:\n{state}\n\n")
-
-        self.history.push(self.state)
-
-        # Autocomplete if available
-        if not unfound_cards:
-            print(f"Autocompleting\n")
-            self.state.move_autocomplete(screen)
-            return True
+    def order_moves(self):
+        self.ordered_moves_list = []
 
         # Move A or 2 from stock to foundation
-        for move in self.moves_list.stock_to_foundation:
+        for move in self.unordered_moves_list.stock_to_foundation:
             if move.src_card.rank != "A":
                 continue
-            print(f"Moving {move.src_card} from stock to foundation\n")
-            self.state.move_stock_to_foundation(screen, move.src_card)
-            return False
-        for move in self.moves_list.stock_to_foundation:
+            self.ordered_moves_list.append((move, "SF"))
+        for move in self.unordered_moves_list.stock_to_foundation:
             if move.src_card.rank != "2":
                 continue
-            print(f"Moving {move.src_card} from stock to foundation\n")
-            self.state.move_stock_to_foundation(screen, move.src_card)
-            return False
+            self.ordered_moves_list.append((move, "SF"))
 
         # Move A or 2 from tableau to foundation
-        for move in self.moves_list.tableau_to_foundation:
+        for move in self.unordered_moves_list.tableau_to_foundation:
             if move.src_card.rank != "A":
                 continue
-            print(f"Moving {move.src_card} from tableau to foundation\n")
-            self.state.move_tableau_to_foundation(screen, move.src_card, unfound_cards)
-            return False
-        for move in self.moves_list.tableau_to_foundation:
+            self.ordered_moves_list.append((move, "TF"))
+        for move in self.unordered_moves_list.tableau_to_foundation:
             if move.src_card.rank != "2":
                 continue
-            print(f"Moving {move.src_card} from tableau to foundation\n")
-            self.state.move_tableau_to_foundation(screen, move.src_card, unfound_cards)
-            return False
+            self.ordered_moves_list.append((move, "TF"))
 
         # Move K from tableau into empty columns
-        candidate_moves = filter_moves(self.moves_list.tableau_to_tableau, lambda move: move.src_card.rank == "K" and not move.src_card.is_bottom_card(self.state))
+        candidate_moves = filter_moves(self.unordered_moves_list.tableau_to_tableau, lambda move: move.src_card.rank == "K" and not move.src_card.is_bottom_card(self.state))
         if candidate_moves:
             move = pick_king_for_empty_column(self.state, candidate_moves)
-            print(f"Moving {move.src_card} from tableau to empty column {move.dst_position.col()}\n")
-            self.state.move_tableau_to_tableau(screen, move.src_card, move.dst_position, unfound_cards)
-            return False
-
+            self.ordered_moves_list.append((move, "TT"))
+            
         # Move K from stock into empty columns
-        candidate_moves = filter_moves(self.moves_list.stock_to_tableau, lambda move: move.src_card.rank == "K")
+        candidate_moves = filter_moves(self.unordered_moves_list.stock_to_tableau, lambda move: move.src_card.rank == "K")
         if candidate_moves:
             move = pick_king_for_empty_column(self.state, candidate_moves)
-            print(f"Moving {move.src_card} from stock to empty column {move.dst_position.col()}\n")
-            self.state.move_stock_to_tableau(screen, move.src_card, move.dst_position)
-            return False
+            self.ordered_moves_list.append((move, "ST"))
 
         # Empty columns for K
         if self.state.has_playable_king():
-            for move in self.moves_list.tableau_to_tableau:
+            for move in self.unordered_moves_list.tableau_to_tableau:
                 if move.src_card.rank == "K" or not move.src_card.is_bottom_card(self.state):
                     continue
-                print(f"Moving {move.src_card} to tableau to create empty column for K\n")
-                self.state.move_tableau_to_tableau(screen, move.src_card, move.dst_position)
-                return False
-            for move in self.moves_list.tableau_to_foundation:
+                self.ordered_moves_list.append((move, "TT"))
+            for move in self.unordered_moves_list.tableau_to_foundation:
                 if move.src_card.rank == "K" or not move.src_card.is_bottom_card(self.state):
                     continue
-                print(f"Moving {move.src_card} to foundation to create empty column for K\n")
-                self.state.move_tableau_to_foundation(screen, move.src_card)
-                return False
+                self.ordered_moves_list.append((move, "TF"))
 
         # Expose hidden cards by moving to tableau
-        candidate_moves = filter_moves(self.moves_list.tableau_to_tableau, lambda move: move.src_card.card_behind(self.state) is None and not move.src_card.is_bottom_card(self.state))
+        candidate_moves = filter_moves(self.unordered_moves_list.tableau_to_tableau, lambda move: move.src_card.card_behind(self.state) is None and not move.src_card.is_bottom_card(self.state))
         if candidate_moves:
             move = pick_tableau_move_by_king(self.state, candidate_moves)
-            print(f"Moving {move.src_card} from tableau to tableau to expose hidden cards\n")
-            self.state.move_tableau_to_tableau(screen, move.src_card, move.dst_position, unfound_cards)
-            return False
+            self.ordered_moves_list.append((move, "TT"))
 
         # Expose hidden cards by moving to foundation
-        candidate_moves = filter_moves(self.moves_list.tableau_to_foundation, lambda move: move.src_card.card_behind(self.state) is None and not move.src_card.is_bottom_card(self.state))
+        candidate_moves = filter_moves(self.unordered_moves_list.tableau_to_foundation, lambda move: move.src_card.card_behind(self.state) is None and not move.src_card.is_bottom_card(self.state))
         if candidate_moves:
             move = pick_tableau_move_by_king(self.state, candidate_moves)
-            print(f"Moving {move.src_card} from tableau to foundation to expose hidden cards\n")
-            self.state.move_tableau_to_foundation(screen, move.src_card, unfound_cards)
-            return False
+            self.ordered_moves_list.append((move, "TF"))
 
         # Play from stock to tableau
-        for move in self.moves_list.stock_to_tableau:
-            print(f"Moving {move.src_card} from stock to tableau\n")
-            self.state.move_stock_to_tableau(screen, move.src_card, move.dst_position)
-            return False
+        for move in self.unordered_moves_list.stock_to_tableau:
+            self.ordered_moves_list.append((move, "ST"))
 
         # Play from tableau to foundation:
-        for move in self.moves_list.tableau_to_foundation:
-            print(f"Moving {move.src_card} from tableau to foundation\n")
-            self.state.move_tableau_to_foundation(screen, move.src_card)
-            return False
+        for move in self.unordered_moves_list.tableau_to_foundation:
+            self.ordered_moves_list.append((move, "TF"))
 
         # Play everything else
-        for move in self.moves_list.tableau_to_tableau:
-            print(f"Moving {move.src_card} to tableau column {move.dst_position.col()}\n")
-            self.state.move_tableau_to_tableau(screen, move.src_card, move.dst_position, unfound_cards)
-            return False
-        for move in self.moves_list.stock_to_tableau:
-            print(f"Moving {move.src_card} to tableau column {move.dst_position.col()}\n")
-            self.state.move_stock_to_tableau(screen, move.src_card, move.dst_position)
-            return False
-        for move in self.moves_list.stock_to_foundation:
-            print(f"Moving {move.src_card} to foundation\n")
-            self.state.move_stock_to_foundation(screen, move.src_card)
-            return False
-        for move in self.moves_list.tableau_to_foundation:
-            print(f"Moving {move.src_card} to foundation\n")
-            self.state.move_tableau_to_foundation(screen, move.src_card, unfound_cards)
-            return False
-        for move in self.moves_list.foundation_to_tableau:
-            print(f"Moving {move.src_card} to tableau column {move.dst_position.col()}\n")
-            self.state.move_foundation_to_tableau(screen, move.src_card, move.dst_position)
-            return False
+        for move in self.unordered_moves_list.tableau_to_tableau:
+            self.ordered_moves_list.append((move, "TT"))
+        for move in self.unordered_moves_list.stock_to_tableau:
+            self.ordered_moves_list.append((move, "ST"))
+        for move in self.unordered_moves_list.stock_to_foundation:
+            self.ordered_moves_list.append((move, "SF"))
+        for move in self.unordered_moves_list.tableau_to_foundation:
+            self.ordered_moves_list.append((move, "TF"))
+        for move in self.unordered_moves_list.foundation_to_tableau:
+            self.ordered_moves_list.append((move, "FT"))
+
+    def play_move(self, screen, unfound_cards):
+        # Order moves if last move was not undo
+        if not self.last_was_undo:
+            self.order_moves()
+
+        print("========== MOVE ORDER ==========")
+        for move in self.ordered_moves_list:
+            print(move)
+        print()
+
+        print("========== CHOSE MOVE ==========")
+        # Check for duplicate game state
+        if self.state in self.seen_states and not self.last_was_undo:
+            print(f"Duplicate game state found. Undoing\n")
+            previous_state, previous_ordered_moves_list = self.history.pop()
+            if previous_state:
+                self.state.move_undo(screen)
+                self.state = previous_state
+                self.ordered_moves_list = previous_ordered_moves_list[1:]
+                self.last_was_undo = True
+                return False
+
+        # Add current game state to set of seen states
+        self.seen_states.add(deepcopy(self.state))
+        self.last_was_undo = False
+
+        with open("states.log", "w") as f:
+            for idx, state in enumerate(self.seen_states):
+                f.write(f"State hash {idx}: {hash(state)}\n")
+                f.write(f"State {idx}:\n{state}\n")
+
+        # Add current game state and ordered moves list to history
+        self.history.push((self.state, self.ordered_moves_list))
+
+        # Autocomplete if available
+        if not unfound_cards:
+            print(f"All cards found. Autocompleting\n")
+            self.state.move_autocomplete(screen)
+            return True
 
         # Undo if out of moves
-        print(f"Undoing\n")
-        previous_state = self.history.pop()
-        if previous_state:
-            self.state.move_undo(screen)
-            self.state = previous_state
-            self.last_was_undo = True
+        if not self.ordered_moves_list:
+            print(f"Out of moves. Undoing\n")
+            previous_state, previous_ordered_moves_list = self.history.pop()
+            if previous_state:
+                self.state.move_undo(screen)
+                self.state = previous_state
+                self.ordered_moves_list = previous_ordered_moves_list[1:]
+                self.last_was_undo = True
+                return False
+
+        # Play the first move
+        chosen_move, move_type = self.ordered_moves_list[0]
+        move_src = move_type[0]
+        move_dst = move_type[1]
+
+        if move_src == "T":
+            if move_dst == "T":
+                print(f"Moving {chosen_move.src_card} from tableau column {chosen_move.src_card.position.col()} to tableau column {chosen_move.dst_position.col()}\n")
+                self.state.move_tableau_to_tableau(screen, chosen_move.src_card, chosen_move.dst_position, unfound_cards)
+                return False
+            else:
+                print(f"Moving {chosen_move.src_card} from tableau to foundation {chosen_move.src_card.suit}\n")
+                self.state.move_tableau_to_foundation(screen, chosen_move.src_card, unfound_cards)
+                return False
+        elif move_src == "S":
+            if move_dst == "T":
+                print(f"Moving {chosen_move.src_card} from stock to tableau column {chosen_move.dst_position.col()}\n")
+                self.state.move_stock_to_tableau(screen, chosen_move.src_card, chosen_move.dst_position)
+                return False
+            else:
+                print(f"Moving {chosen_move.src_card} from stock to foundation {chosen_move.src_card.suit}\n")
+                self.state.move_stock_to_foundation(screen, chosen_move.src_card)
+                return False
+        else:
+            print(f"Moving {chosen_move.src_card} from foundation {chosen_move.src_card.suit} to tableau column {chosen_move.dst_position.col()}\n")
+            self.state.move_foundation_to_tableau(screen, chosen_move.src_card, chosen_move.dst_position)
+            return False
 
 class History:
     def __init__(self):
         self.stack = []
 
-    def push(self, state):
-        self.stack.append(deepcopy(state))
+    def push(self, state_and_moves):
+        self.stack.append(deepcopy(state_and_moves))
 
     def pop(self):
         if self.stack:
