@@ -96,23 +96,26 @@ class Solver:
 
         # Play from stock to tableau
         for move in self.unordered_moves_list.stock_to_tableau:
-            self.ordered_moves_list.append((move, "ST"))
+            if (move, "ST") not in self.ordered_moves_list:
+                self.ordered_moves_list.append((move, "ST"))
 
         # Play from tableau to foundation:
         for move in self.unordered_moves_list.tableau_to_foundation:
-            self.ordered_moves_list.append((move, "TF"))
+            if (move, "TF") not in self.ordered_moves_list:
+                self.ordered_moves_list.append((move, "TF"))
+        
+        # Play from stock to foundation:
+        for move in self.unordered_moves_list.stock_to_foundation:
+            if (move, "SF") not in self.ordered_moves_list:
+                self.ordered_moves_list.append((move, "SF"))
 
         # Play everything else
         for move in self.unordered_moves_list.tableau_to_tableau:
-            self.ordered_moves_list.append((move, "TT"))
-        for move in self.unordered_moves_list.stock_to_tableau:
-            self.ordered_moves_list.append((move, "ST"))
-        for move in self.unordered_moves_list.stock_to_foundation:
-            self.ordered_moves_list.append((move, "SF"))
-        for move in self.unordered_moves_list.tableau_to_foundation:
-            self.ordered_moves_list.append((move, "TF"))
+            if (move, "TT") not in self.ordered_moves_list:
+                self.ordered_moves_list.append((move, "TT"))
         for move in self.unordered_moves_list.foundation_to_tableau:
-            self.ordered_moves_list.append((move, "FT"))
+            if (move, "FT") not in self.ordered_moves_list:
+                self.ordered_moves_list.append((move, "FT"))
 
     def play_move(self, screen, unfound_cards):
         # Order moves if last move was not undo
