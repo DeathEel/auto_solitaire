@@ -5,6 +5,9 @@ class Move:
         self.src_card = src_card
         self.dst_position = dst_position
 
+    def __repr__(self):
+        return f"{self.src_card}, {self.dst_position}"
+
 class MovesList:
     def __init__(self):
         self.reset()
