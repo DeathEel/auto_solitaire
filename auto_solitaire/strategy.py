@@ -114,7 +114,9 @@ class Solver:
             if (move, "TT") not in self.ordered_moves_list:
                 self.ordered_moves_list.append((move, "TT"))
         for move in self.unordered_moves_list.foundation_to_tableau:
-            if (move, "FT") not in self.ordered_moves_list:
+            if (move, "FT") in self.ordered_moves_list:
+                continue
+            if move.src_card.rank != "A" and move.src_card.rank != "2":
                 self.ordered_moves_list.append((move, "FT"))
 
     def play_move(self, screen, unfound_cards):
